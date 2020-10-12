@@ -1,15 +1,13 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.domain.dto.RecipeCreationInput;
+import com.mydiet.mydiet.domain.entity.FoodTime;
+import com.mydiet.mydiet.domain.entity.ProductType;
 import com.mydiet.mydiet.domain.entity.Recipe;
-import com.mydiet.mydiet.domain.exception.NoContentException;
+import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.repository.RecipeRepository;
-import io.swagger.annotations.SwaggerDefinition;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/recipe")
@@ -24,8 +22,8 @@ public class RecipeController {
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
                 .programNumber(recipeCreationInput.getProgramNumber())
-                .day(recipeCreationInput.getDay())
-                .foodTime(recipeCreationInput.getFoodTime())
+                .dayNumber(recipeCreationInput.getDay())
+                .foodTime(FoodTime.valueOf(recipeCreationInput.getFoodTime()))
                 .build();
 
         return recipeRepository.save(recipe).getId();
@@ -40,7 +38,7 @@ public class RecipeController {
 
         } else {
             var message = String.format("Recipe %s does not exist", recipeId);
-            throw new NoContentException(message);
+            throw new NotFoundException(message);
         }
     }
 

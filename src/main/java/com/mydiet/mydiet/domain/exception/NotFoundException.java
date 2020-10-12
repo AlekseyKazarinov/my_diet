@@ -3,9 +3,9 @@ package com.mydiet.mydiet.domain.exception;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class NoContentException extends RuntimeException {
+public class NotFoundException extends RuntimeException {
 
-    public NoContentException(String message) {
+    public NotFoundException(String message) {
         super(message);
     }
 }

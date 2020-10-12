@@ -11,9 +11,11 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class RecipeCreationInput {
+
     private String name;
     private String description;
     private String foodTime;
     private String day;
-    private Long   programNumber;
+    private Integer programNumber;
+
 }

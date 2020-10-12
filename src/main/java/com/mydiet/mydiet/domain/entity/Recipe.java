@@ -24,8 +24,8 @@ public class Recipe {
 
     //private List<String> ingredients;
     private Integer      kkal;
-    private String       foodTime;
-    private String       day;
-    private Long         programNumber;
+    private FoodTime     foodTime;
+    private String       dayNumber;
+    private Integer      programNumber;
 
 }
