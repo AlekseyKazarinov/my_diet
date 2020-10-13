@@ -9,23 +9,27 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Getter
-@Setter
-@EqualsAndHashCode
+@Data
 public class Recipe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long         id;
+    private Long     id;
 
-    private String       name;
-    private String       imageId;
-    private String       description;
+    private String   name;
+    private String   imageId;
+    private String   description;
 
-    //private List<String> ingredients;
-    private Integer      kkal;
-    private FoodTime     foodTime;
-    private String       dayNumber;
-    private Integer      programNumber;
+    @OneToMany
+    private List<Ingredient> ingredients;
+
+    @Transient
+    private Double totalKkal;
+    @Transient
+    private Double totalProteins;
+    @Transient
+    private Double totalFats;
+    @Transient
+    private Double totalCarbohydrates;
 
 }
