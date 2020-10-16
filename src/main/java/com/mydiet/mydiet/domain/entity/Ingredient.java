@@ -9,7 +9,9 @@ public class Ingredient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
     private Product product;
-    private Double total100g;
+    private Double totalQuantity;
+    private QuantityUnit unit;
 
 }

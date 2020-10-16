@@ -35,4 +35,20 @@ public enum ProductType {
 
         return productTypes.get(description);
     }
+
+    public boolean isVeganProduct(ProductType productType) {
+        switch (productType) {
+            case FRUIT:
+            case VEGETABLE:
+            case GROCERY:
+            case OTHER:
+                return true;
+            case FISH:
+            case MEAT:
+            case DAIRY:
+                return false;
+            default:
+                throw new IllegalArgumentException("Product type " + productType + " can not be resolved");
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.domain.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import javax.persistence.Id;
 
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Image {
 
@@ -18,6 +20,6 @@ public class Image {
     private Long id;
 
     private String name;
-    private String resource;
+    private String resource; // base64 encoding
 
 }

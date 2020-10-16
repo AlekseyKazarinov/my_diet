@@ -14,6 +14,12 @@ public class NutritionProgramController {
         return null;
     }
 
+    // update for admin only (ROLE CHECK)
+    // get for users  (without authorization)
+
+    // todo: download N programs, list of numbers for programs not to send
+    //
+
     @PostMapping
     public Integer createNutritionProgram(@RequestBody NutritionProgramInput nutritionProgramInput) {
 

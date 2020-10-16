@@ -17,19 +17,17 @@ public class Recipe {
     private Long     id;
 
     private String   name;
-    private String   imageId;
-    private String   description;
+
+    @ManyToOne
+    private Image   image;
+    private String  description;
 
     @OneToMany
     private List<Ingredient> ingredients;
 
-    @Transient
     private Double totalKkal;
-    @Transient
     private Double totalProteins;
-    @Transient
     private Double totalFats;
-    @Transient
     private Double totalCarbohydrates;
 
 }

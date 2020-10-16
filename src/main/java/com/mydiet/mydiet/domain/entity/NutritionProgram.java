@@ -1,9 +1,10 @@
 package com.mydiet.mydiet.domain.entity;
 
 import lombok.Data;
-import org.hibernate.annotations.Formula;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.List;
 
 @Entity
@@ -12,16 +13,25 @@ public class NutritionProgram {
 
     @Id
     @Column(unique = true)
-    private Integer number;
+    private Integer number;       // preview
 
-    private String  name;
-    private String  description;
+    @Version
+    private Long version;
+
+    @LastModifiedDate
+    private Instant lastModifiedAt;
+
+    private String name;          // preview
+
+    @ManyToOne
+    private Image imageProgram;  // preview
+    private String description;   // preview   // todo: stub for language: default = Russian
+
+    private String backgroundColour;  // preview
 
     @OneToMany
-    private List<DailyDiet> dailyDietList;
+    private List<DailyDiet> dailyDietList;  // as a user I want to ..?
 
-    @Formula("round(numberOfDays / numberOfWeeks)")  //todo: it works?
-    private Integer numberOfWeeks;
-    private Integer numberOfDays;
+    private Integer numberOfMeals;
 
 }

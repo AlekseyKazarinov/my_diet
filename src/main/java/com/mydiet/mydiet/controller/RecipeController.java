@@ -16,14 +16,11 @@ public class RecipeController {
 
     private final RecipeRepository recipeRepository;
 
-    @PostMapping(path = "/")
+    @PostMapping
     public Long createRecipe(@RequestBody RecipeCreationInput recipeCreationInput) {
         var recipe = Recipe.builder()
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
-                .programNumber(recipeCreationInput.getProgramNumber())
-                .dayNumber(recipeCreationInput.getDay())
-                .foodTime(FoodTime.valueOf(recipeCreationInput.getFoodTime()))
                 .build();
 
         return recipeRepository.save(recipe).getId();

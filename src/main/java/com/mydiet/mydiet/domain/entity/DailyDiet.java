@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.Map;
+import java.util.List;
 
 @Entity
 @Data
@@ -17,11 +17,41 @@ public class DailyDiet {
 
     private String name;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "meal_id")
-    @MapKeyJoinColumn(name = "food_time")
-    private Map<FoodTime, Meal> mealByTime;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "daily_diet_meal",
+            joinColumns = @JoinColumn(
+                    name = "daily_diet_id"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "meal_id"
+            )
+    )
+    private List<Meal> mealList;
 
-    private Integer dayNumber;
+    private int numberOfMeals;
+
+    public void addMeal(Meal meal) {
+        if (mealList.size() == numberOfMeals) {
+
+            throw new IndexOutOfBoundsException("Daily Diet " + id + " already has " + numberOfMeals + " meals");
+        }
+
+        mealList.add(meal);
+        numberOfMeals++;
+    }
+
+    public void removeMeal(int index) {
+        mealList.remove(index);
+        numberOfMeals--;
+    }
+
+    public void removeMealFor(FoodTime foodTime) {
+        var removed = mealList.removeIf(meal -> meal.getFoodTime() == foodTime);
+
+        if (removed) {
+            numberOfMeals--;
+        }
+    }
 
 }
