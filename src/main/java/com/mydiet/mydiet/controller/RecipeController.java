@@ -1,41 +1,48 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.domain.dto.RecipeCreationInput;
-import com.mydiet.mydiet.domain.entity.FoodTime;
-import com.mydiet.mydiet.domain.entity.ProductType;
 import com.mydiet.mydiet.domain.entity.Recipe;
-import com.mydiet.mydiet.domain.exception.NotFoundException;
-import com.mydiet.mydiet.repository.RecipeRepository;
+import com.mydiet.mydiet.service.RecipeService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(path = "/recipe")
+@RequestMapping(path = "/recipes")
 @RequiredArgsConstructor
 public class RecipeController {
 
-    private final RecipeRepository recipeRepository;
+    private final RecipeService recipeService;
 
+    @ApiOperation(value = "Create a new Recipe")
+    //@ApiResponses(value = @ApiResponse(code = 201, message = "Recipe created", response = Recipe.class))
     @PostMapping
-    public Long createRecipe(@RequestBody RecipeCreationInput recipeCreationInput) {
-        var recipe = Recipe.builder()
-                .name(recipeCreationInput.getName())
-                .description(recipeCreationInput.getDescription())
-                .build();
-
-        return recipeRepository.save(recipe).getId();
+    public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeCreationInput recipeCreationInput) {
+        var headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        var recipe = recipeService.createRecipe(recipeCreationInput);
+        return ResponseEntity.status(HttpStatus.CREATED).headers(headers).body(recipe);
     }
 
+    @ApiOperation(value = "Get a Recipe")
+    //@ApiResponses(value = @ApiResponse(code = 200, message = "Recipe fetched", response = Recipe.class))
     @GetMapping(path = "/{recipeId}")
-    public Recipe getRecipe(@PathVariable Long recipeId) {
-        var optionalRecipe = recipeRepository.findById(recipeId);
+    public ResponseEntity<Recipe> getRecipe(@PathVariable @NonNull Long recipeId) {
+        var optionalRecipe = recipeService.findRecipeById(recipeId);
 
+        var headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
         if (optionalRecipe.isPresent()) {
-            return optionalRecipe.get();
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(optionalRecipe.get());
 
         } else {
-            var message = String.format("Recipe %s does not exist", recipeId);
-            throw new NotFoundException(message);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
     }
 

@@ -1,11 +1,14 @@
 package com.mydiet.mydiet.domain.entity;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Entity
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
 public class Meal {
 
     @Id

@@ -3,6 +3,7 @@ package com.mydiet.mydiet.repository;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.ProductType;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;

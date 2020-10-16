@@ -1,6 +1,12 @@
 package com.mydiet.mydiet.domain.entity;
 
+import com.mydiet.mydiet.domain.exception.ValidationException;
 import lombok.AllArgsConstructor;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @AllArgsConstructor
 public enum QuantityUnit {
@@ -14,7 +20,37 @@ public enum QuantityUnit {
     PINCH("Щепотка", "щеп."),
     PIECE("Штука", "шт.");
 
-    private String name;
+    private String description;
     private String abbreviation;
+
+    private static String NOT_EXIST = "Quantity Unit %s does not exist";
+
+    private static Set<String> unitNames = Arrays.stream(QuantityUnit.values())
+            .flatMap(unit -> Stream.of(unit.description, unit.abbreviation))
+            .collect(Collectors.toSet());
+
+    public static QuantityUnit of(String unit) {
+        for (var quantityUnit : QuantityUnit.values()) {
+
+            if (quantityUnit.description.equals(unit)
+                    || quantityUnit.abbreviation.equals(unit)) {
+
+                return quantityUnit;
+            }
+        }
+
+        throw new IllegalArgumentException(String.format(NOT_EXIST, unit));
+    }
+
+    private static boolean isValidUnit(String name) {
+        return unitNames.contains(name);
+    }
+
+    public static void validateUnit(String name) {
+        if (!isValidUnit(name)) {
+            var message = String.format("%s is not a valid QuantityUnit", name);
+            throw new ValidationException(message);
+        }
+    }
 
 }
