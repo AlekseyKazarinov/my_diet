@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "/recipes")
 @RequiredArgsConstructor
@@ -41,6 +43,36 @@ public class RecipeController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
     }
+
+    @ApiOperation(value = "Get All Recipes")
+    @ApiResponses(value = @ApiResponse(code = 200, message = "All Recipes recieved", response = Recipe[].class))
+    @GetMapping(path = "/all")
+    public ResponseEntity<List<Recipe>> getAllRecipes() {
+        var recipeList = recipeService.findAllRecipes();
+
+        if (!recipeList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(recipeList);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+    }
+
+    @ApiOperation(value = "Get Resipes sorted by similarity in calories")
+    @ApiResponses(value = @ApiResponse(code = 200, message = "All Sorted Recipes recieved", response = Recipe[].class))
+    @GetMapping(path = "/sorted-by-calories")
+    public ResponseEntity<List<Recipe>> getAllSortedRecipes(@RequestParam Integer kkal, @RequestParam Integer maxCount) {
+        var recipeList = recipeService.findAllRecipesSortedBySimilarityInCalories(kkal, maxCount);
+
+        if (!recipeList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.OK).body(recipeList);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+    }
+
+
 
     /*
     Create a new recipe:

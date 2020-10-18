@@ -54,7 +54,7 @@ public class ProductService {
     public void validateProductCreationInput(ProductCreationInput input) {
         Preconditions.checkNotNull(input, "Product is null");
 
-        Utils.validateFieldIsSet(input.getName(), input);
+        Utils.validateFieldIsSet(input.getName(), "Name", input);
         ProductType.validateDescription(input.getProductType());
     }
 

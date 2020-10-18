@@ -20,7 +20,7 @@ public class IngredientService {
     public void validateIngredientCreationInput(IngredientCreationInput ingredient) {
         Preconditions.checkNotNull(ingredient, "Ingredient is null");
 
-        Utils.validateValueIsNonNegative(ingredient.getTotalQuantity(), ingredient);
+        Utils.validateValueIsNonNegative(ingredient.getTotalQuantity(), "TotalQuantity", ingredient);
         QuantityUnit.validateUnit(ingredient.getUnit());
 
         productService.validateProductCreationInput(ingredient.getProduct());

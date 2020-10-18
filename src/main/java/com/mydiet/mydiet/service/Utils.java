@@ -7,24 +7,42 @@ import org.springframework.util.StringUtils;
 @UtilityClass
 public class Utils {
 
-    public static void validateFieldIsSet(String field, Object entity) {
+    private static final String VALUE_NON_NEGATIVE = "Value %s should be positive or equal to zero";
+    private static final String FIELD_NON_NEGATIVE = VALUE_NON_NEGATIVE + " for %s";
+    private static final String FIELD_NON_NULL = "Field %s should be set for %s";
+    private static final String VALUE_NON_NULL = "Value %s should be set";
+
+    public static void validateFieldIsSet(String field, String fieldName, Object entity) {
         if (StringUtils.isEmpty(field)) {
-            var message = String.format("Field %s should be set for %s", field, name(entity));
+            var message = String.format(FIELD_NON_NULL, fieldName, name(entity));
             throw new ValidationException(message);
         }
     }
 
-    public static void validateValueIsSet(Number value, Object entity) {
+    public static void validateValueIsSet(Number value, String fieldName,Object entity) {
         if (value == null) {
-            var message = String.format("Value %s should be set for creating Recipe", value, name(entity));
+            var message = String.format("Value %s should be set for creating %s", fieldName, name(entity));
             throw new ValidationException(message);
         }
     }
 
-    public static void validateValueIsNonNegative(Double value, Object entity) {
-        validateValueIsSet(value, entity);
+    public static void validateValueIsNonNegative(Double value, String fieldName, Object entity) {
+        validateValueIsSet(value, fieldName, entity);
         if (value < 0) {
-            var message = String.format("Value %s should be positive or equal to zero", value, name(entity));
+            var message = String.format(FIELD_NON_NEGATIVE, fieldName, name(entity));
+            throw new ValidationException(message);
+        }
+    }
+
+    public static void validateValueWithNameIsNonNegative(Integer value, String valueName) {
+        if (value == null) {
+            var message = String.format(VALUE_NON_NULL, valueName);
+            throw new ValidationException(message);
+        }
+
+        if (value < 0) {
+            var message = String.format(VALUE_NON_NEGATIVE, valueName);
+            throw new ValidationException(message);
         }
     }
 
