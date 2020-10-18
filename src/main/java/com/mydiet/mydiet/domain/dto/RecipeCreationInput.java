@@ -18,7 +18,7 @@ public class RecipeCreationInput {
     private String description;
 
     private List<IngredientCreationInput> ingredients;
-    private Image                         image;
+    private ImageCreationInput            image;
 
     private Double totalKkal;
     private Double totalProteins;

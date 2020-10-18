@@ -22,4 +22,6 @@ public class MydietApplication {
 				.apis(RequestHandlerSelectors.basePackage("com.mydiet.mydiet.controller")).build();
 	}
 
+
+
 }

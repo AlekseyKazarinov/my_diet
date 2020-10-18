@@ -1,9 +1,12 @@
 package com.mydiet.mydiet.service;
 
 import com.mydiet.mydiet.domain.dto.RecipeCreationInput;
+import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.Recipe;
+import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
+import com.mydiet.mydiet.repository.ImageRepository;
 import com.mydiet.mydiet.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +24,7 @@ public class RecipeService {
 
     private final IngredientService ingredientService;
     private final RecipeRepository recipeRepository;
+    private final ImageService imageService;
 
     public Recipe createValidatedRecipe(RecipeCreationInput recipeCreationInput) {
         validateRecipeCreationInput(recipeCreationInput);
@@ -55,6 +59,23 @@ public class RecipeService {
 
     public Optional<Recipe> findRecipeById(Long recipeId) {
         return recipeRepository.findById(recipeId);
+    }
+
+    public Image addImageToRecipe(Long recipeId, String imageName, String imageSource) {
+        var optionalRecipe = findRecipeById(recipeId);
+
+        if (optionalRecipe.isEmpty()) {
+            var message = String.format("Recipe with id %s does not exist", recipeId);
+
+            throw new NotFoundException(message);
+        }
+
+        var recipe = optionalRecipe.get();
+        var image = imageService.createValidatedImage(imageName, imageSource);
+        recipe.setImage(image);
+        recipeRepository.save(recipe);
+
+        return image;
     }
 
     public List<Recipe> findAllRecipesSortedBySimilarityInCalories(Integer kkal, Integer maxCount) {

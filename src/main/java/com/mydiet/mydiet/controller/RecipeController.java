@@ -1,6 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.domain.dto.RecipeCreationInput;
+import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.service.RecipeService;
 import io.swagger.annotations.ApiOperation;
@@ -70,6 +71,16 @@ public class RecipeController {
         } else {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
+    }
+
+    @ApiOperation(value = "Put an Image into a Recipe")
+    @ApiResponses(value = @ApiResponse(code = 200, message = "Image created for Recipe", response = Image.class))
+    @PutMapping("/{recipeId}/image")
+    public ResponseEntity<Image> addImageToRecipe(@PathVariable @NonNull Long recipeId,
+                                                  @RequestParam @NonNull String imageName,
+                                                  @RequestBody @NonNull String imageSource) {
+        var image = recipeService.addImageToRecipe(recipeId, imageName, imageSource);
+        return ResponseEntity.status(HttpStatus.OK).body(image);
     }
 
 
