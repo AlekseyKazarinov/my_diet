@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -21,25 +20,22 @@ public class RecipeController {
     private final RecipeService recipeService;
 
     @ApiOperation(value = "Create a new Recipe")
-    //@ApiResponses(value = @ApiResponse(code = 201, message = "Recipe created", response = Recipe.class))
+    @ApiResponses(value = @ApiResponse(code = 201, message = "Recipe created", response = Recipe.class))
     @PostMapping
     public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeCreationInput recipeCreationInput) {
-        var headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json");
-        var recipe = recipeService.createRecipe(recipeCreationInput);
-        return ResponseEntity.status(HttpStatus.CREATED).headers(headers).body(recipe);
+        var recipe = recipeService.createValidatedRecipe(recipeCreationInput);
+        return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
+
     }
 
     @ApiOperation(value = "Get a Recipe")
-    //@ApiResponses(value = @ApiResponse(code = 200, message = "Recipe fetched", response = Recipe.class))
+    @ApiResponses(value = @ApiResponse(code = 200, message = "Recipe recieved", response = Recipe.class))
     @GetMapping(path = "/{recipeId}")
     public ResponseEntity<Recipe> getRecipe(@PathVariable @NonNull Long recipeId) {
         var optionalRecipe = recipeService.findRecipeById(recipeId);
 
-        var headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json");
         if (optionalRecipe.isPresent()) {
-            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(optionalRecipe.get());
+            return ResponseEntity.status(HttpStatus.OK).body(optionalRecipe.get());
 
         } else {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

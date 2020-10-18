@@ -21,22 +21,25 @@ public enum ProductType {
     GROCERY("Бакалея",4),
     OTHER("Разное",5);
 
-    private String description;
-    private Integer number;
+    private final String description;
+    private final Integer number;
 
-    private static String NOT_EXIST = "Product Type %s does not exist";
+    private static final String NOT_EXIST = "Product Type %s does not exist";
 
-    private static Map<String, Integer> productTypes = Arrays.stream(ProductType.values())
+    private static final Map<String, Integer> productTypes = Arrays.stream(ProductType.values())
                                                       .collect(Collectors.toMap(ProductType::getDescription,
                                                                                   ProductType::getNumber));
 
-    private static Set<String> productTypeDescriptions = Arrays.stream(ProductType.values())
+    private static final Set<String> productTypeDescriptions = Arrays.stream(ProductType.values())
                                                       .map(ProductType::getDescription)
                                                       .collect(Collectors.toSet());
 
     public static ProductType of(String description) {
         for (var productType : ProductType.values()) {
-            if (productType.description.equals(description)) {
+
+            if (productType.name().equalsIgnoreCase(description)
+                || productType.description.equals(description)) {
+
                 return productType;
             }
         }

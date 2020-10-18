@@ -6,6 +6,7 @@ import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class RecipeService {
     private final IngredientService ingredientService;
     private final RecipeRepository recipeRepository;
 
-    public Recipe createRecipe(RecipeCreationInput recipeCreationInput) {
+    public Recipe createValidatedRecipe(RecipeCreationInput recipeCreationInput) {
         validateRecipeCreationInput(recipeCreationInput);
 
         var ingredients = new ArrayList<Ingredient>();
@@ -37,7 +38,12 @@ public class RecipeService {
                 .totalCarbohydrates(recipeCreationInput.getTotalCarbohydrates())
                 .build();
 
-        return recipeRepository.save(recipe);
+        return saveRecipe(recipe);
+    }
+
+    private Recipe saveRecipe(Recipe recipe) {
+        return recipeRepository.findRecipeByName(recipe.getName())
+                               .orElseGet(() -> recipeRepository.save(recipe));
     }
 
     public Optional<Recipe> findRecipeById(Long recipeId) {
@@ -47,10 +53,10 @@ public class RecipeService {
     private void validateRecipeCreationInput(RecipeCreationInput recipeCreationInput) {
         Utils.validateFieldIsSet(recipeCreationInput.getName(), recipeCreationInput);
         Utils.validateFieldIsSet(recipeCreationInput.getDescription(), recipeCreationInput);
-        Utils.validateValueIsSet(recipeCreationInput.getTotalKkal(), recipeCreationInput);
-        Utils.validateValueIsSet(recipeCreationInput.getTotalFats(), recipeCreationInput);
-        Utils.validateValueIsSet(recipeCreationInput.getTotalProteins(), recipeCreationInput);
-        Utils.validateValueIsSet(recipeCreationInput.getTotalCarbohydrates(), recipeCreationInput);
+        Utils.validateValueIsNonNegative(recipeCreationInput.getTotalKkal(), recipeCreationInput);
+        Utils.validateValueIsNonNegative(recipeCreationInput.getTotalFats(), recipeCreationInput);
+        Utils.validateValueIsNonNegative(recipeCreationInput.getTotalProteins(), recipeCreationInput);
+        Utils.validateValueIsNonNegative(recipeCreationInput.getTotalCarbohydrates(), recipeCreationInput);
 
         var ingredients = recipeCreationInput.getIngredients();
 
@@ -63,7 +69,5 @@ public class RecipeService {
             ingredientService.validateIngredientCreationInput(ingredient);
         }
     }
-
-
 
 }

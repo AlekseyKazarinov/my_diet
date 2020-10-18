@@ -1,8 +1,11 @@
 package com.mydiet.mydiet.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
+
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 @Entity
 @NoArgsConstructor
@@ -12,6 +15,8 @@ import javax.persistence.*;
 public class Meal {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = READ_ONLY)
     private Long id;
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

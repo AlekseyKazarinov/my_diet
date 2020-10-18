@@ -11,5 +11,7 @@ spring:
     show-sql: true
 
   h2:
+
     console:
       enabled: true  # connect to: http://localhost:8080/h2-console
+

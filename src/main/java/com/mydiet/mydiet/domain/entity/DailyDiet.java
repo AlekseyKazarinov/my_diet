@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.List;
+
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 @Entity
 @Data
@@ -17,12 +20,13 @@ public class DailyDiet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonProperty(access = READ_ONLY)
     private Long id;
 
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(
+    /*@JoinTable(
             name = "daily_diet_meal",
             joinColumns = @JoinColumn(
                     name = "daily_diet_id"
@@ -30,7 +34,7 @@ public class DailyDiet {
             inverseJoinColumns = @JoinColumn(
                     name = "meal_id"
             )
-    )
+    )*/
     private List<Meal> mealList;
 
     private int numberOfMeals;
