@@ -1,9 +1,10 @@
 package com.mydiet.mydiet.service;
 
 import com.google.common.base.Preconditions;
-import com.mydiet.mydiet.domain.dto.ProductCreationInput;
+import com.mydiet.mydiet.domain.dto.ProductInput;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.ProductType;
+import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public Product createProduct(ProductCreationInput input) {
+    public Product createProduct(ProductInput productCreationInput) {
         var product = Product.builder()
-                .name(input.getName())
-                .productType(ProductType.of(input.getProductType()))
+                .name(productCreationInput.getName())
+                .productType(ProductType.of(productCreationInput.getProductType()))
                 .build();
 
         //return product;
@@ -46,12 +47,27 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Product createValidatedProduct(ProductCreationInput input) {
-        validateProductCreationInput(input);
+    public Product getProductOrThrow(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("Product with id: %s does not exist", productId))
+                );
+    }
+
+    public Product updateProduct(Long productId, ProductInput productUpdateInput) {
+        var product = getProductOrThrow(productId);
+        product.setName(productUpdateInput.getName());
+        product.setProductType(ProductType.of(productUpdateInput.getProductType()));
+
+        return saveProduct(product);
+    }
+
+    public Product createValidatedProduct(ProductInput input) {
+        validateProductInput(input);
         return createProduct(input);
     }
 
-    public void validateProductCreationInput(ProductCreationInput input) {
+    public void validateProductInput(ProductInput input) {
         Preconditions.checkNotNull(input, "Product is null");
 
         Utils.validateFieldIsSet(input.getName(), "Name", input);

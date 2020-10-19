@@ -12,6 +12,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Getter
+@Setter
 public class Image {
 
     @Id

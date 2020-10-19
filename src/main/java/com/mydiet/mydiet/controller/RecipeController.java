@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.controller;
 
+import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.RecipeCreationInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Recipe;
@@ -23,7 +24,8 @@ public class RecipeController {
     private final RecipeService recipeService;
 
     @ApiOperation(value = "Create a new Recipe")
-    @ApiResponses(value = @ApiResponse(code = 201, message = "Recipe created", response = Recipe.class))
+    @ApiResponses(value = {@ApiResponse(code = 201, message = "Recipe created", response = Recipe.class),
+                           @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)})
     @PostMapping
     public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeCreationInput recipeCreationInput) {
         var recipe = recipeService.createValidatedRecipe(recipeCreationInput);
@@ -32,7 +34,7 @@ public class RecipeController {
     }
 
     @ApiOperation(value = "Get a Recipe")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "Recipe recieved", response = Recipe.class))
+    @ApiResponses(value = @ApiResponse(code = 200, message = "Recipe received", response = Recipe.class))
     @GetMapping(path = "/{recipeId}")
     public ResponseEntity<Recipe> getRecipe(@PathVariable @NonNull Long recipeId) {
         var optionalRecipe = recipeService.findRecipeById(recipeId);
@@ -46,7 +48,7 @@ public class RecipeController {
     }
 
     @ApiOperation(value = "Get All Recipes")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "All Recipes recieved", response = Recipe[].class))
+    @ApiResponses(value = @ApiResponse(code = 200, message = "All Recipes received", response = Recipe[].class))
     @GetMapping(path = "/all")
     public ResponseEntity<List<Recipe>> getAllRecipes() {
         var recipeList = recipeService.findAllRecipes();
@@ -59,8 +61,8 @@ public class RecipeController {
         }
     }
 
-    @ApiOperation(value = "Get Resipes sorted by similarity in calories")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "All Sorted Recipes recieved", response = Recipe[].class))
+    @ApiOperation(value = "Get Recipes sorted by similarity in calories")
+    @ApiResponses(value = @ApiResponse(code = 200, message = "All Sorted Recipes received", response = Recipe[].class))
     @GetMapping(path = "/sorted-by-calories")
     public ResponseEntity<List<Recipe>> getAllSortedRecipes(@RequestParam Integer kkal, @RequestParam Integer maxCount) {
         var recipeList = recipeService.findAllRecipesSortedBySimilarityInCalories(kkal, maxCount);
@@ -73,6 +75,14 @@ public class RecipeController {
         }
     }
 
+    @PutMapping("/{recipeId}/update")
+    public ResponseEntity<Recipe> updateRecipe(
+            @PathVariable @NonNull Long recipeId,
+            @RequestBody @NonNull RecipeCreationInput recipeUpdateInput) {
+        var recipe = recipeService.updateValidatedRecipe(recipeId, recipeUpdateInput);
+        return ResponseEntity.status(HttpStatus.OK).body(recipe);
+    }
+
     @ApiOperation(value = "Put an Image into a Recipe")
     @ApiResponses(value = @ApiResponse(code = 200, message = "Image created for Recipe", response = Image.class))
     @PutMapping("/{recipeId}/image")
@@ -83,32 +93,7 @@ public class RecipeController {
         return ResponseEntity.status(HttpStatus.OK).body(image);
     }
 
-
-
-    /*
-    Create a new recipe:
-POST /recipes
-	201 Created -> returns recipeId
-Response body:
-{
-	"recipeId": long
-}
-
-Update a recipe:
-PUT /recipes/{recipeId}
-	200 OK
-        404 Not Found {recipeId}
-Response body = recipe
-
-Update image for a recipe:
-PATCH /recipes/{recipeId}/image
-	200 OK
-        404 Not Found {recipeId}
-Response body:
-{
-	"imageId": long
-}
-
+/*
 Update description for a recipe:
 PATCH /recipes/{recipeId}/description
 	200 OK

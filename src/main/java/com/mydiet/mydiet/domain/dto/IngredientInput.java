@@ -3,9 +3,9 @@ package com.mydiet.mydiet.domain.dto;
 import lombok.Data;
 
 @Data
-public class IngredientCreationInput {
+public class IngredientInput {
 
-    private ProductCreationInput product;
+    private ProductInput product;
 
     private Double               totalQuantity;
     private String               unit;

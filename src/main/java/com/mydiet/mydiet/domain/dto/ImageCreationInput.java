@@ -6,6 +6,6 @@ import lombok.Data;
 public class ImageCreationInput {
 
     String name;
-    String source;
+    String resource;
     
 }
