@@ -1,7 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
-import com.mydiet.mydiet.domain.dto.RecipeCreationInput;
+import com.mydiet.mydiet.domain.dto.RecipeInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.service.RecipeService;
@@ -27,14 +27,15 @@ public class RecipeController {
     @ApiResponses(value = {@ApiResponse(code = 201, message = "Recipe created", response = Recipe.class),
                            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)})
     @PostMapping
-    public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeCreationInput recipeCreationInput) {
+    public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeInput recipeCreationInput) {
         var recipe = recipeService.createValidatedRecipe(recipeCreationInput);
         return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
 
     }
 
     @ApiOperation(value = "Get a Recipe")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "Recipe received", response = Recipe.class))
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Recipe received", response = Recipe.class),
+                           @ApiResponse(code = 204, message = "There is no Recipe with that id")})
     @GetMapping(path = "/{recipeId}")
     public ResponseEntity<Recipe> getRecipe(@PathVariable @NonNull Long recipeId) {
         var optionalRecipe = recipeService.findRecipeById(recipeId);
@@ -78,7 +79,7 @@ public class RecipeController {
     @PutMapping("/{recipeId}/update")
     public ResponseEntity<Recipe> updateRecipe(
             @PathVariable @NonNull Long recipeId,
-            @RequestBody @NonNull RecipeCreationInput recipeUpdateInput) {
+            @RequestBody @NonNull RecipeInput recipeUpdateInput) {
         var recipe = recipeService.updateValidatedRecipe(recipeId, recipeUpdateInput);
         return ResponseEntity.status(HttpStatus.OK).body(recipe);
     }
@@ -89,7 +90,7 @@ public class RecipeController {
     public ResponseEntity<Image> addImageToRecipe(@PathVariable @NonNull Long recipeId,
                                                   @RequestParam @NonNull String imageName,
                                                   @RequestBody @NonNull String imageSource) {
-        var image = recipeService.addImageToRecipe(recipeId, imageName, imageSource);
+        var image = recipeService.setImageForRecipe(recipeId, imageName, imageSource);
         return ResponseEntity.status(HttpStatus.OK).body(image);
     }
 

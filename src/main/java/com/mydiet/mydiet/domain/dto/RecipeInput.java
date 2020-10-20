@@ -9,7 +9,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public class RecipeCreationInput {
+public class RecipeInput {
 
     private String name;
     private String description;

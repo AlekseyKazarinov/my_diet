@@ -1,7 +1,6 @@
 package com.mydiet.mydiet.service;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.mydiet.mydiet.domain.dto.IngredientInput;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
@@ -11,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -40,10 +38,10 @@ public class IngredientService {
                 .totalQuantity(ingredientCreationInput.getTotalQuantity())
                 .build();
 
-        return saveIfOriginalIngredient(ingredient);
+        return saveIfOriginal(ingredient);
     }
 
-    private Ingredient saveIfOriginalIngredient(Ingredient ingredient) {
+    private Ingredient saveIfOriginal(Ingredient ingredient) {
         var optionalStoredIngredient = ingredientRepository.findByProductAndTotalQuantityAndUnit(
                 ingredient.getProduct(), ingredient.getTotalQuantity(), ingredient.getUnit()
         );
@@ -59,7 +57,7 @@ public class IngredientService {
     public Ingredient getIngredientOrThrow(Long ingredientId) {
         return ingredientRepository.findById(ingredientId)
                 .orElseThrow(
-                        () -> new NotFoundException(String.format("Ingredient with id: %s does not exist", ingredientId))
+                    () -> new NotFoundException(String.format("Ingredient with id: %s does not exist", ingredientId))
                 );
     }
 

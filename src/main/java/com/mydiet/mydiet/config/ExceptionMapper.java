@@ -5,7 +5,6 @@ import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 

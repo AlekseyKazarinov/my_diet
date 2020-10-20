@@ -11,6 +11,7 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Setter
 @Getter
 public class Meal {
 
@@ -19,7 +20,7 @@ public class Meal {
     @JsonProperty(access = READ_ONLY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne//(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Recipe recipe;
 
     private FoodTime foodTime;
