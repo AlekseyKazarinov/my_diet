@@ -4,11 +4,13 @@ import com.mydiet.mydiet.domain.dto.RecipeInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.Recipe;
+import com.mydiet.mydiet.domain.exception.GenericException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -53,12 +55,20 @@ public class RecipeService {
                 .totalCarbohydrates(recipeCreationInput.getTotalCarbohydrates())
                 .build();
 
-        return saveRecipe(recipe);
+        return saveIfOriginal(recipe);
     }
 
-    private Recipe saveRecipe(Recipe recipe) {
-        return recipeRepository.findRecipeByName(recipe.getName())
-                               .orElseGet(() -> recipeRepository.save(recipe));
+    private Recipe saveIfOriginal(Recipe recipe) {
+        try {
+            return recipeRepository.findOne(Example.of(recipe))
+                    .orElseGet(() -> recipeRepository.save(recipe));
+
+        } catch (Exception e) {
+            log.error("An error occurred when finding example of Recipe {}", recipe);
+            throw new GenericException("Failed when trying to find the same Recipe", e);
+        }
+        /*return recipeRepository.findRecipeByName(recipe.getName())
+                               .orElseGet(() -> recipeRepository.save(recipe));*/
     }
 
     public List<Recipe> findAllRecipes() {
@@ -171,12 +181,12 @@ public class RecipeService {
     public void validateRecipeInput(RecipeInput recipeCreationInput) {
         validateRecipeSpecificFields(recipeCreationInput);
 
-        var recipeName = recipeCreationInput.getName();
+        /*var recipeName = recipeCreationInput.getName();
         if (recipeRepository.findRecipeByName(recipeName).isPresent()) {
             var message = String.format("Recipe with Name: %s already exists", recipeName);
 
             throw new ValidationException(message);
-        }
+        }*/
 
         validateIngredientsList(recipeCreationInput);
 

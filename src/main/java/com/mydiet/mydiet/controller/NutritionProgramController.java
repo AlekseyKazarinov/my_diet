@@ -8,6 +8,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/nutrition-programs")
 public class NutritionProgramController {
 
+    @PostMapping
+    public Integer createNutritionProgram(@RequestBody NutritionProgramInput nutritionProgramInput) {
+
+        return null;
+    }
+
     @GetMapping(path = "/{programNumber}")
     public NutritionProgram getNutritionProgram(@PathVariable Integer programNumber) {
 
@@ -20,10 +26,6 @@ public class NutritionProgramController {
     // todo: download N programs, list of numbers for programs not to send
     //
 
-    @PostMapping
-    public Integer createNutritionProgram(@RequestBody NutritionProgramInput nutritionProgramInput) {
 
-        return null;
-    }
 
 }

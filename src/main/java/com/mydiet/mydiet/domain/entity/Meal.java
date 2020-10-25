@@ -8,6 +8,7 @@ import javax.persistence.*;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 @Entity
+@Table(name = "MEAL")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

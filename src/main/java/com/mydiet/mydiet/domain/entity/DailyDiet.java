@@ -1,21 +1,22 @@
 package com.mydiet.mydiet.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.stereotype.Service;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 @Entity
-@Data
+@Table(name = "DAILY_DIET")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class DailyDiet {
 
     @Id
@@ -25,20 +26,20 @@ public class DailyDiet {
 
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    /*@JoinTable(
-            name = "daily_diet_meal",
+    @ManyToMany//(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "DAILY_DIET_MEAL",
             joinColumns = @JoinColumn(
-                    name = "daily_diet_id"
+                    name = "DAILY_DIET_ID", referencedColumnName = "ID"
             ),
             inverseJoinColumns = @JoinColumn(
-                    name = "meal_id"
+                    name = "MEAL_ID", referencedColumnName = "ID"
             )
-    )*/
-    private List<Meal> mealList;
+    )
+    private Set<Meal> meals;
 
-    private int numberOfMeals;
-
+    //private int numberOfMeals;
+/*
     public void addMeal(Meal meal) {
         if (mealList.size() == numberOfMeals) {
 
@@ -60,6 +61,6 @@ public class DailyDiet {
         if (removed) {
             numberOfMeals--;
         }
-    }
+    }*/
 
 }

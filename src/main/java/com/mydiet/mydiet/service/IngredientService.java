@@ -38,6 +38,7 @@ public class IngredientService {
                 .totalQuantity(ingredientCreationInput.getTotalQuantity())
                 .build();
 
+        //return ingredient;
         return saveIfOriginal(ingredient);
     }
 

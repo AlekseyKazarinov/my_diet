@@ -37,8 +37,8 @@ public class Recipe {
 
     @ManyToMany//(cascade = CascadeType.ALL)
     @JoinTable(name = "RECIPE_INGREDIENT",
-            joinColumns=@JoinColumn(name = "RECIPE_ID", referencedColumnName="ID"),
-            inverseJoinColumns=@JoinColumn(name="INGREDIENT_ID", referencedColumnName="ID"))
+            joinColumns=@JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID"),
+            inverseJoinColumns=@JoinColumn(name = "INGREDIENT_ID", referencedColumnName = "ID"))
     private List<Ingredient> ingredients;
 
     private Double totalKkal;

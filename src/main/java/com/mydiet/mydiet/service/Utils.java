@@ -4,6 +4,9 @@ import com.mydiet.mydiet.domain.exception.ValidationException;
 import lombok.experimental.UtilityClass;
 import org.springframework.util.StringUtils;
 
+import java.util.Collection;
+import java.util.List;
+
 @UtilityClass
 public class Utils {
 
@@ -50,6 +53,18 @@ public class Utils {
 
         if (value < 0) {
             var message = String.format(VALUE_NON_NEGATIVE, valueName);
+            throw new ValidationException(message);
+        }
+    }
+
+    public static void validateCollectionContainsElements(Collection<? extends Object> collection, String listName, Object entity) {
+        if (collection == null) {
+            var message = String.format("List '%s' for %s should not be null", listName, name(entity));
+            throw new ValidationException(message);
+        }
+
+        if (collection.isEmpty()) {
+            var message = String.format("List '%s' for %s should not be empty", listName, name(entity));
             throw new ValidationException(message);
         }
     }
