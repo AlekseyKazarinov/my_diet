@@ -5,7 +5,6 @@ import lombok.experimental.UtilityClass;
 import org.springframework.util.StringUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 @UtilityClass
 public class Utils {
@@ -16,7 +15,7 @@ public class Utils {
     private static final String TEXT_FIELD_NON_NULL = "Field %s should be set";
     private static final String VALUE_NON_NULL = "Value %s should be set";
 
-    public static void validateFieldIsSet(String field, String fieldName, Object entity) {
+    public static void validateEntityFieldIsSet(String field, String fieldName, Object entity) {
         if (StringUtils.isEmpty(field)) {
             var message = String.format(FIELD_NON_NULL, fieldName, name(entity));
             throw new ValidationException(message);
@@ -30,16 +29,16 @@ public class Utils {
         }
     }
 
-    public static void validateValueIsSet(Number value, String fieldName, Object entity) {
+    public static void validateEntityValueIsSet(Number value, String fieldName, Object entity) {
         if (value == null) {
             var message = String.format("Value %s should be set for creating %s", fieldName, name(entity));
             throw new ValidationException(message);
         }
     }
 
-    public static void validateValueIsNonNegative(Double value, String fieldName, Object entity) {
-        validateValueIsSet(value, fieldName, entity);
-        if (value < 0) {
+    public static void validateEntityValueIsNonNegative(Number value, String fieldName, Object entity) {
+        validateEntityValueIsSet(value, fieldName, entity);
+        if (value.doubleValue() < 0) {
             var message = String.format(FIELD_NON_NEGATIVE, fieldName, name(entity));
             throw new ValidationException(message);
         }

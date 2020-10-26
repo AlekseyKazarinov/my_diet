@@ -3,16 +3,13 @@ package com.mydiet.mydiet.service;
 import com.mydiet.mydiet.domain.dto.MealInput;
 import com.mydiet.mydiet.domain.entity.FoodTime;
 import com.mydiet.mydiet.domain.entity.Meal;
-import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.repository.MealRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,7 +27,7 @@ public class MealService {
     }
 
     private void validateMealInput(MealInput mealInput) {
-        Utils.validateFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
+        Utils.validateEntityFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
         recipeService.validateRecipeInput(mealInput.getRecipeInput());
     }
 

@@ -198,12 +198,12 @@ public class RecipeService {
     }
 
     private void validateRecipeSpecificFields(RecipeInput recipeInput) {
-        Utils.validateFieldIsSet(recipeInput.getName(), "Name", recipeInput);
-        Utils.validateFieldIsSet(recipeInput.getDescription(), "Description", recipeInput);
-        Utils.validateValueIsNonNegative(recipeInput.getTotalKkal(), "TotalKkal", recipeInput);
-        Utils.validateValueIsNonNegative(recipeInput.getTotalFats(), "TotalFats", recipeInput);
-        Utils.validateValueIsNonNegative(recipeInput.getTotalProteins(), "TotalProteins", recipeInput);
-        Utils.validateValueIsNonNegative(recipeInput.getTotalCarbohydrates(), "TotalCarbohydrates", recipeInput);
+        Utils.validateEntityFieldIsSet(recipeInput.getName(), "Name", recipeInput);
+        Utils.validateEntityFieldIsSet(recipeInput.getDescription(), "Description", recipeInput);
+        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalKkal(), "TotalKkal", recipeInput);
+        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalFats(), "TotalFats", recipeInput);
+        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalProteins(), "TotalProteins", recipeInput);
+        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalCarbohydrates(), "TotalCarbohydrates", recipeInput);
 
     }
 

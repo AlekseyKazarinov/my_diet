@@ -4,6 +4,7 @@ import com.mydiet.mydiet.domain.dto.DailyDietInput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
+import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.repository.DailyDietRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,21 @@ public class DailyDietService {
     public void validateDailyDietInput(DailyDietInput dailyDietInput) {
         var mealIds = dailyDietInput.getMealIds();
         Utils.validateCollectionContainsElements(mealIds, "mealIds", dailyDietInput);
+    }
+
+    public void validateDailyDietInputContainsNumberOfMealsEqualTo(
+            Short expectedNumberOfMeals, DailyDietInput dailyDietInput
+    ) {
+       var dailyDietNumberOfMeals = dailyDietInput.getMealIds().size();
+       if (dailyDietNumberOfMeals != expectedNumberOfMeals) {
+           var message = String.format(
+                   "Inconsistent Daily Diet input: number of Meals is %s but expected: %s",
+                   dailyDietNumberOfMeals,
+                   expectedNumberOfMeals
+                   );
+           log.error(message);
+           throw new ValidationException(message);
+       }
     }
 
     public DailyDiet updateDailyDietName(Long dailyDietId, String newDailyDietName) {

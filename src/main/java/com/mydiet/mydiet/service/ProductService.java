@@ -70,7 +70,7 @@ public class ProductService {
     public void validateProductInput(ProductInput input) {
         Preconditions.checkNotNull(input, "Product is null");
 
-        Utils.validateFieldIsSet(input.getName(), "Name", input);
+        Utils.validateEntityFieldIsSet(input.getName(), "Name", input);
         ProductType.validateDescription(input.getProductType());
     }
 
