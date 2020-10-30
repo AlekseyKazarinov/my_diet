@@ -11,14 +11,22 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public enum QuantityUnit {
 
+    KILOGRAM("Килограмм", "кг."),
     GRAM("Грамм", "г."),
+    MILLILITER("Миллилитр", "мл."),
+    LITER("Литр", "л."),
     TEASPOON("Чайная ложка", "ч.л."),
     HEAPED_TEASPOON("Чайная ложка с горкой", "ч.л. с горкой"),
     TABLESPOON("Столовая ложка", "ст.л."),
     HEAPED_TABLESPOON("Столовая ложка c горкой", "ст.л. с горкой"),
     GLASS("Стакан", "ст."),
+    CUP("Чашка", "чашка"),
     PINCH("Щепотка", "щеп."),
-    PIECE("Штука", "шт.");
+    PIECE("Штука", "шт."),
+    BY_TASTE("По вкусу", "по вкусу"),
+    OPTIONAL("По желанию", "по желанию"),
+    DROP("Капля", "капля"),
+    NOT_USED(null, null);
 
     private String description;
     private String abbreviation;

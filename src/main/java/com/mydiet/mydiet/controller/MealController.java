@@ -4,6 +4,7 @@ import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.MealInput;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.service.MealService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/meals")
 @RequiredArgsConstructor
+@Api(tags = "Meals")
 public class MealController {
 
     private final MealService mealService;

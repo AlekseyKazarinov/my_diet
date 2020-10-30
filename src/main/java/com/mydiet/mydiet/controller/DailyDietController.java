@@ -4,6 +4,7 @@ import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.DailyDietInput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.service.DailyDietService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/daily-diets")
+@Api(tags = "Daily Diets")
 public class DailyDietController {
 
     private final DailyDietService dailyDietService;

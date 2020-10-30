@@ -4,9 +4,7 @@ import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.NutritionProgramInput;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.service.NutritionProgramService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(path = "/nutrition-programs")
 @RequiredArgsConstructor
+@Api(tags = "Nutrition Programs")
 public class NutritionProgramController {
 
     private final NutritionProgramService nutritionProgramService;
@@ -29,6 +28,7 @@ public class NutritionProgramController {
             @RequestBody NutritionProgramInput nutritionProgramInput
     ) {
         var program = nutritionProgramService.createValidatedNutritionProgram(nutritionProgramInput);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(program);
     }
 

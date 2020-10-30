@@ -5,6 +5,7 @@ import com.mydiet.mydiet.domain.dto.RecipeInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.service.RecipeService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/recipes")
 @RequiredArgsConstructor
+@Api(tags = "Recipes")
 public class RecipeController {
 
     private final RecipeService recipeService;

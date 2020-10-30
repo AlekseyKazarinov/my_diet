@@ -31,11 +31,12 @@ public class NutritionProgram {
     @JsonProperty(access = READ_ONLY)
     private Instant lastModifiedAt;
 
-    private String name;          // preview
-    private String description;   // preview   // todo: stub for language: default = Russian
+    private String name;             // preview
+    private String shortDescription; // preview
+    private String description;      // todo: stub for language: default = Russian
 
     @ManyToOne
-    private Image image;  // preview
+    private Image image;             // preview
 
     private String backgroundColour;  // preview // todo: clarify format
 

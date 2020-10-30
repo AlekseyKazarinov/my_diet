@@ -1,7 +1,7 @@
 package com.mydiet.mydiet.service;
 
 import com.mydiet.mydiet.domain.dto.NutritionProgramInput;
-import com.mydiet.mydiet.domain.dto.NutritionProgramOutput;
+import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.domain.entity.Product;
