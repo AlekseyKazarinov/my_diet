@@ -1,15 +1,15 @@
 package com.mydiet.mydiet.domain.entity;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
-public abstract class ShoppingList {
+public class ShoppingList {
 
-    private Map<Product, Quantity> listOfProducts;
+    private Long nutritionProgramNumber;
+    private List<WeekList> listsByWeek;
 
 }

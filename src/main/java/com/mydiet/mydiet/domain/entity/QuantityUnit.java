@@ -23,9 +23,9 @@ public enum QuantityUnit {
     CUP("Чашка", "чашка"),
     PINCH("Щепотка", "щеп."),
     PIECE("Штука", "шт."),
+    DROP("Капля", "капля"),
     BY_TASTE("По вкусу", "по вкусу"),
     OPTIONAL("По желанию", "по желанию"),
-    DROP("Капля", "капля"),
     NOT_USED(null, null);
 
     private String description;

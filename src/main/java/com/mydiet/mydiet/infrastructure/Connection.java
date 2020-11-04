@@ -1,22 +1,21 @@
 package com.mydiet.mydiet.infrastructure;
 
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 @Getter
 @Accessors(fluent = true)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Connection {
 
     private Consistence  consistence;
     private QuantityUnit toUnit;
     private QuantityUnit[] fromUnits;
-
-    private Connection() {
-    }
 
     interface ConnectionForType {
         ConnectionFrom forType(Consistence consistence);
