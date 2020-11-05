@@ -3,10 +3,16 @@ package com.mydiet.mydiet.infrastructure;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.service.NutritionProgramService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UnitConverterService {
@@ -14,12 +20,23 @@ public class UnitConverterService {
     private final NutritionProgramService programService;
     private final UnitGraphService unitGraphService;
 
+
+    public ShoppingList getShoppingListFor(Long programNumber) {
+        var nutritionProgram = programService.getProgramOrElseThrow(programNumber);
+        return generateShoppingListFor(nutritionProgram);
+    }
+
+    public WeekList getShoppingListForWeekNo(Integer weekNumber, Long programNumber) {
+        var nutritionProgram = programService.getProgramOrElseThrow(programNumber);
+        return generateListOfProductsForWeekNo(weekNumber, nutritionProgram);
+    }
+
     /**
      * Generates all weekly shopping lists for nutrition program
-     * @param nutritionProgram - program for which the list to be created
+     * @param nutritionProgram a program for which the list to be created
      * @return
      */
-   public ShoppingList generateShoppingListFor(NutritionProgram nutritionProgram) {
+   private ShoppingList generateShoppingListFor(NutritionProgram nutritionProgram) {
        var numberOfWeeks = programService.getNumberOfWeeksFor(nutritionProgram);
 
        var shoppingList = new ShoppingList();
@@ -27,43 +44,73 @@ public class UnitConverterService {
        shoppingList.setListsByWeek(new ArrayList<>());
 
        for (int n = 1; n <= numberOfWeeks; n++) {
-           var dailyDiets = programService.getDailyDietsForWeekNo(n, nutritionProgram);
-           var weekList = new WeekList();
-           weekList.setNumberOfWeek(n);
-
-           var ingredientsForWeek = new ArrayList<Ingredient>();
-           dailyDiets.forEach(dailyDiet -> {
-                       dailyDiet.getMeals()
-                               .forEach(meal -> ingredientsForWeek.addAll(meal.getRecipe().getIngredients()));
-           });
-           ingredientsForWeek.sort(Comparator.comparingLong(i -> i.getProduct().getId()));
-           
-           var productMap = new HashMap<Long, ProductRow>();
-
-
-           
-           for (var ingredient : ingredientsForWeek) {
-               addTo(productMap, ingredient.getProduct(), ingredient.getUnit(), ingredient.getTotalQuantity());
-           }
-           
+           var weekList = generateListOfProductsForWeekNo(n, nutritionProgram);
            shoppingList.getListsByWeek().add(weekList);
        }
 
        return shoppingList;
    }
 
-    private void addTo(Map<Long, ProductRow> productMap, Product product, QuantityUnit quantityUnit, Double totalQuantity) {
-       var productId = product.getId();
+   private WeekList generateListOfProductsForWeekNo(Integer weekNumber, NutritionProgram nutritionProgram) {
+       log.info("generate list of products for week number: {}, Nutrition Program: #{}",
+               weekNumber, nutritionProgram.getNumber());
 
-        if (!productMap.containsKey(productId)) {
-            productMap.put(productId, new ProductRow(product, totalQuantity, quantityUnit));
-            return;
-        }
+       var dailyDiets = programService.getDailyDietsForWeekNo(weekNumber, nutritionProgram);
+       var listsByProductType = getProductListsByProductTypeFrom(dailyDiets);
 
-        var productRow = productMap.get(productId);
+       var weekList = new WeekList();
+       weekList.setListsByProductType(listsByProductType);
+       weekList.setNumberOfWeek(weekNumber);
+       return weekList;
+   }
 
-        // ... implement addition to corresponding value in productRow
-    }
+   private Map<ProductType, List<ProductRow>> getProductListsByProductTypeFrom(List<DailyDiet> dailyDiets) {
+       var quantityMap = getQuantityListsByProductMapFrom(dailyDiets);
+       return convertToProductListsByProductType(quantityMap);
+   }
 
+   private Map<Product, List<Quantity>> getQuantityListsByProductMapFrom(List<DailyDiet> dailyDiets) {
+       log.info("fetch all Quantities for each Product from dailyDiets");
+
+       var ingredients = new ArrayList<Ingredient>();
+
+       dailyDiets.forEach(dailyDiet -> {
+           dailyDiet.getMeals()
+                   .forEach(meal -> ingredients.addAll(meal.getRecipe().getIngredients()));
+       });
+
+      return ingredients.stream().collect(
+              Collectors.groupingBy(
+                       Ingredient::getProduct,
+                       LinkedHashMap::new,
+                       mapping(i -> new Quantity(i.getTotalQuantity(), i.getUnit()), toList())
+              ));
+   }
+
+   private Map<ProductType, List<ProductRow>> convertToProductListsByProductType(
+           Map<Product, List<Quantity>> quantityMap
+   ) {
+       log.info("convert Quantities for each Product to Product Row for Shopping List");
+
+       var productRowList = new ArrayList<ProductRow>();
+
+       for (var product : quantityMap.keySet()) {
+           var quantity = unitGraphService.sum(product, (Quantity[]) quantityMap.get(product).toArray());
+           productRowList.add(
+                   ProductRow.of(
+                           product.getProductType(),
+                           product.getName(),
+                           quantity.getTotalQuantity(),
+                           quantity.getUnit())
+           );
+       }
+
+       return productRowList.stream().collect(
+               Collectors.groupingBy(
+                       ProductRow::getProductType,
+                       LinkedHashMap::new,
+                       Collectors.toList()
+               ));
+   }
 
 }

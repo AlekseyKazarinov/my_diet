@@ -4,7 +4,7 @@ import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.Quantity;
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
 import com.mydiet.mydiet.domain.exception.GenericException;
-import com.mydiet.mydiet.repository.UnitConversionRepository;
+import com.mydiet.mydiet.repository.ConversionUnitsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,9 +25,11 @@ public class UnitGraphService {
             TEASPOON, TABLESPOON, GLASS, CUP, PINCH, PIECE, DROP
     );
 
-    private final UnitConversionRepository unitConversionRepository;
+    private final ConversionUnitsService conversionUnitsService;
 
     public Quantity sum(Product product, Quantity... quantities) {
+        log.debug("sum quantities {} for Product #{}", quantities, product.getName());
+
         var maxUnit = Collections.max(List.of(quantities), Comparator.comparing(Quantity::getUnit,
                 (u1, u2) -> {return UnitGraph.compare(u1, u2, product.getConsistence());})).getUnit();
 
@@ -53,54 +55,22 @@ public class UnitGraphService {
         var totalCoef = 1.0;
 
         var nextStableUnit = UnitGraph.transformToClosestUnitInShoppingList(initUnit, product.getConsistence());
-        totalCoef *= getCoefficientFor(initUnit, product.getId());
+
+        log.debug("next stable unit for {} is {}", initUnit, nextStableUnit);
+
+        totalCoef *= conversionUnitsService.getCoefficientFor(initUnit, product.getId());
 
         while(nextStableUnit != resultUnit) {
             nextStableUnit = UnitGraph.getNextStableUnit(nextStableUnit, product.getConsistence());
-            totalCoef *= getCoefficientFor(nextStableUnit, product.getId());
+            totalCoef *= conversionUnitsService.getCoefficientFor(nextStableUnit, product.getId());
         }
+        log.debug("total coefficient for conversion {} --> {} is {}", initUnit, resultUnit, totalCoef);
 
         quantity.setUnit(resultUnit);
         quantity.setTotalQuantity(quantity.getTotalQuantity() * totalCoef);
 
         return quantity;
     }
-
-    private Double getCoefficientFor(QuantityUnit initUnit, Long productId) {
-        if (!CONVERTIBLE_UNITS.contains(initUnit)) {
-            return getPredefinedCoefficientFor(initUnit);
-        }
-
-        var convCoefList = unitConversionRepository.findConversionCoefficients(initUnit.name().toLowerCase(), productId);
-
-        if (convCoefList.isEmpty()) {
-            var message = String.format("Failed to convert from %s to next unit for Product %s. " +
-                    "Conversion coefficient does not exist", initUnit, productId);
-            log.error("Conversiont error: {}", message);
-
-            throw new GenericException(message);
-        }
-
-        return convCoefList.get(0);
-    }
-
-    private Double getPredefinedCoefficientFor(QuantityUnit initUnit) {
-        switch (initUnit) {
-            case GRAM:
-            case MILLILITER:
-                return 0.001;
-            case HEAPED_TABLESPOON:
-            case HEAPED_TEASPOON:
-                return 1.5;
-            case KILOGRAM:
-            case LITER:
-                return 1.0;
-            default:
-                throw new IllegalArgumentException("Non supported initUnit " +
-                        initUnit.name() + ": not existing predefined coefficient");
-        }
-    }
-
 
     @PostConstruct
     public static void testUnitGraph() {

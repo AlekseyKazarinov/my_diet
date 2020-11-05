@@ -14,6 +14,7 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 @AllArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class Ingredient {
 
     @Id

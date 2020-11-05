@@ -5,6 +5,7 @@ import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.domain.entity.Product;
+import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +73,13 @@ public class NutritionProgramService {
 
     public Optional<NutritionProgram> findNutritionProgram(Long programNumber) {
         return nutritionProgramRepository.findById(programNumber);
+    }
+
+    public NutritionProgram getProgramOrElseThrow(Long programNumber) {
+        return nutritionProgramRepository.findById(programNumber)
+                .orElseThrow(
+                    () -> new NotFoundException(String.format("Nutrition Program #%s does not exist", programNumber))
+                );
     }
 
     public Long getTotalNumberOfPrograms() {
