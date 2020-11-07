@@ -1,6 +1,6 @@
 package com.mydiet.mydiet.service;
 
-import com.mydiet.mydiet.domain.dto.MealInput;
+import com.mydiet.mydiet.domain.dto.input.MealInput;
 import com.mydiet.mydiet.domain.entity.FoodTime;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
@@ -27,7 +27,7 @@ public class MealService {
     }
 
     private void validateMealInput(MealInput mealInput) {
-        Utils.validateEntityFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
+        Utils.validateStringFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
         recipeService.validateRecipeInput(mealInput.getRecipeInput());
     }
 
@@ -55,6 +55,10 @@ public class MealService {
 
     public Optional<Meal> findMealById(Long mealId) {
         return mealRepository.findById(mealId);
+    }
+
+    public List<Meal> findAllMeals() {
+        return mealRepository.findAll();
     }
 
     public Meal getMealOrElseThrow(Long mealId) {
@@ -90,7 +94,7 @@ public class MealService {
     }
 
     public Meal setFoodTimeForMeal(Long mealId, String foodTime) {
-        Utils.validateTextFieldIsSet(foodTime, "foodTime");
+        Utils.validateTextVariableIsSet(foodTime, "foodTime");
 
         var meal = getMealOrElseThrow(mealId);
         meal.setFoodTime(FoodTime.of(foodTime));
@@ -99,7 +103,7 @@ public class MealService {
     }
 
     public List<Meal> getMealsByFoodTime(String foodTime) {
-        Utils.validateTextFieldIsSet(foodTime, "foodTime");
+        Utils.validateTextVariableIsSet(foodTime, "foodTime");
 
         return mealRepository.findMealsByFoodTime(FoodTime.of(foodTime));
     }

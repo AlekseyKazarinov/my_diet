@@ -1,7 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
-import com.mydiet.mydiet.domain.dto.RecipeInput;
+import com.mydiet.mydiet.domain.dto.input.RecipeInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.service.RecipeService;

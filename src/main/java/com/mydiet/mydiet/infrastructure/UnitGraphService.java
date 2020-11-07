@@ -3,8 +3,6 @@ package com.mydiet.mydiet.infrastructure;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.Quantity;
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
-import com.mydiet.mydiet.domain.exception.GenericException;
-import com.mydiet.mydiet.repository.ConversionUnitsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -27,11 +25,11 @@ public class UnitGraphService {
 
     private final ConversionUnitsService conversionUnitsService;
 
-    public Quantity sum(Product product, Quantity... quantities) {
-        log.debug("sum quantities {} for Product #{}", quantities, product.getName());
+    public Quantity sum(Product product, List<Quantity> quantities) {
+        log.info("sum quantities {} for Product #{}", quantities, product.getName());
 
-        var maxUnit = Collections.max(List.of(quantities), Comparator.comparing(Quantity::getUnit,
-                (u1, u2) -> {return UnitGraph.compare(u1, u2, product.getConsistence());})).getUnit();
+        var maxUnit = Collections.max(quantities, Comparator.comparing(Quantity::getUnit,
+                (u1, u2) -> UnitGraph.compare(u1, u2, product.getConsistence()))).getUnit();
 
         if (!UnitGraph.isInShoppingList(maxUnit)) {
             maxUnit = UnitGraph.transformToClosestUnitInShoppingList(maxUnit, product.getConsistence());
@@ -47,6 +45,12 @@ public class UnitGraphService {
     }
 
     private Quantity transformTo(QuantityUnit resultUnit, Quantity quantity, Product product) {
+        if (!UnitGraph.isInShoppingList(resultUnit)) {
+            throw new IllegalArgumentException(
+                    String.format("Result Unit %s for Shopping list is invalid. Product: %s", resultUnit, product.getName())
+            );
+        }
+
         if (quantity.getUnit() == resultUnit) {
             return quantity;
         }
@@ -54,15 +58,16 @@ public class UnitGraphService {
         var initUnit = quantity.getUnit();
         var totalCoef = 1.0;
 
-        var nextStableUnit = UnitGraph.transformToClosestUnitInShoppingList(initUnit, product.getConsistence());
+        //var nextStableUnit = UnitGraph.transformToClosestUnitInShoppingList(initUnit, product.getConsistence());
 
-        log.debug("next stable unit for {} is {}", initUnit, nextStableUnit);
+        //log.debug("next stable unit for {} is {}", initUnit, nextStableUnit);
 
-        totalCoef *= conversionUnitsService.getCoefficientFor(initUnit, product.getId());
+        //totalCoef *= conversionUnitsService.getCoefficientFor(initUnit, product.getId());
+        var currentUnit = initUnit;
 
-        while(nextStableUnit != resultUnit) {
-            nextStableUnit = UnitGraph.getNextStableUnit(nextStableUnit, product.getConsistence());
-            totalCoef *= conversionUnitsService.getCoefficientFor(nextStableUnit, product.getId());
+        while(currentUnit != resultUnit) {
+            totalCoef *= conversionUnitsService.getCoefficientFor(currentUnit, product.getId());
+            currentUnit = UnitGraph.getNextStableUnit(currentUnit, product.getConsistence());
         }
         log.debug("total coefficient for conversion {} --> {} is {}", initUnit, resultUnit, totalCoef);
 

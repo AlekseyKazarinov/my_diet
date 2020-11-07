@@ -1,7 +1,7 @@
 package com.mydiet.mydiet.service;
 
 import com.google.common.base.Preconditions;
-import com.mydiet.mydiet.domain.dto.IngredientInput;
+import com.mydiet.mydiet.domain.dto.input.IngredientInput;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
@@ -23,7 +23,7 @@ public class IngredientService {
     public void validateIngredientCreationInput(IngredientInput ingredient) {
         Preconditions.checkNotNull(ingredient, "Ingredient is null");
 
-        Utils.validateEntityValueIsNonNegative(ingredient.getTotalQuantity(), "TotalQuantity", ingredient);
+        Utils.validateFieldIsNonNegative(ingredient.getTotalQuantity(), "TotalQuantity", ingredient);
         QuantityUnit.validateUnit(ingredient.getUnit());
 
         productService.validateProductInput(ingredient.getProduct());

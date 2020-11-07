@@ -1,7 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
-import com.mydiet.mydiet.domain.dto.DailyDietInput;
+import com.mydiet.mydiet.domain.dto.input.DailyDietInput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.service.DailyDietService;
 import io.swagger.annotations.Api;

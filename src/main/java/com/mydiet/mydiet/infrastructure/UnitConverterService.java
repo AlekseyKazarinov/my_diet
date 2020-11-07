@@ -90,12 +90,12 @@ public class UnitConverterService {
    private Map<ProductType, List<ProductRow>> convertToProductListsByProductType(
            Map<Product, List<Quantity>> quantityMap
    ) {
-       log.info("convert Quantities for each Product to Product Row for Shopping List");
+       log.info("convert Quantities for each Product to Product Row for Shopping List: {}", quantityMap);
 
        var productRowList = new ArrayList<ProductRow>();
 
        for (var product : quantityMap.keySet()) {
-           var quantity = unitGraphService.sum(product, (Quantity[]) quantityMap.get(product).toArray());
+           var quantity = unitGraphService.sum(product, quantityMap.get(product));
            productRowList.add(
                    ProductRow.of(
                            product.getProductType(),

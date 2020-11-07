@@ -2,6 +2,7 @@ package com.mydiet.mydiet.config;
 
 import com.google.common.collect.Lists;
 import com.mydiet.mydiet.domain.entity.*;
+import com.mydiet.mydiet.infrastructure.Consistence;
 import com.mydiet.mydiet.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class PrepareDataRunner implements CommandLineRunner {
         var product = Product.builder()
                 .productType(ProductType.FISH)
                 .name("fish")
+                .consistence(Consistence.SOLID)
                 .build();
         product = productRepository.save(product);
 

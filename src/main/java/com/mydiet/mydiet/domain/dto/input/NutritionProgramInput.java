@@ -1,6 +1,6 @@
-package com.mydiet.mydiet.domain.dto;
+package com.mydiet.mydiet.domain.dto.input;
 
-import com.mydiet.mydiet.domain.entity.DailyDiet;
+import com.mydiet.mydiet.domain.dto.input.DailyDietInput;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,6 +17,6 @@ public class NutritionProgramInput {
     private String backgroundColour;
 
     private List<DailyDietInput> dailyDietInputs;
-    private Short numberOfMeals;
+    private Short                dailyNumberOfMeals;
 
 }

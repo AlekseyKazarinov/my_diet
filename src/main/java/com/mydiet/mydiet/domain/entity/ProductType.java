@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @AllArgsConstructor
 @Getter
@@ -30,15 +31,15 @@ public enum ProductType {
                                                       .collect(Collectors.toMap(ProductType::getDescription,
                                                                                   ProductType::getNumber));
 
-    private static final Set<String> productTypeDescriptions = Arrays.stream(ProductType.values())
-                                                      .map(ProductType::getDescription)
+    private static final Set<String> productTypeNames = Arrays.stream(ProductType.values())
+                                                      .flatMap(type -> Stream.of(type.name(), type.description))
                                                       .collect(Collectors.toSet());
 
     public static ProductType of(String description) {
         for (var productType : ProductType.values()) {
 
             if (productType.name().equalsIgnoreCase(description)
-                || productType.description.equals(description)) {
+                || productType.description.equalsIgnoreCase(description)) {
 
                 return productType;
             }
@@ -66,7 +67,7 @@ public enum ProductType {
     }
 
     private static boolean isValidDescription(String description) {
-        return productTypeDescriptions.contains(description);
+        return productTypeNames.contains(description);
     }
 
     public static void validateDescription(String description) {

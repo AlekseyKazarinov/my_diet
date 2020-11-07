@@ -1,6 +1,6 @@
 package com.mydiet.mydiet.service;
 
-import com.mydiet.mydiet.domain.dto.RecipeInput;
+import com.mydiet.mydiet.domain.dto.input.RecipeInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.Recipe;
@@ -155,8 +155,8 @@ public class RecipeService {
     }
 
     public List<Recipe> findAllRecipesSortedBySimilarityInCalories(Integer kkal, Integer maxCount) {
-        Utils.validateValueWithNameIsNonNegative(kkal, "kkal");
-        Utils.validateValueWithNameIsNonNegative(maxCount, "maxCount");
+        Utils.validateVariableIsNonNegative(kkal, "kkal");
+        Utils.validateVariableIsNonNegative(maxCount, "maxCount");
 
         var countAbove = maxCount / 2;
         var countBelow = maxCount - countAbove;
@@ -198,12 +198,12 @@ public class RecipeService {
     }
 
     private void validateRecipeSpecificFields(RecipeInput recipeInput) {
-        Utils.validateEntityFieldIsSet(recipeInput.getName(), "Name", recipeInput);
-        Utils.validateEntityFieldIsSet(recipeInput.getDescription(), "Description", recipeInput);
-        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalKkal(), "TotalKkal", recipeInput);
-        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalFats(), "TotalFats", recipeInput);
-        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalProteins(), "TotalProteins", recipeInput);
-        Utils.validateEntityValueIsNonNegative(recipeInput.getTotalCarbohydrates(), "TotalCarbohydrates", recipeInput);
+        Utils.validateStringFieldIsSet(recipeInput.getName(), "Name", recipeInput);
+        Utils.validateStringFieldIsSet(recipeInput.getDescription(), "Description", recipeInput);
+        Utils.validateFieldIsNonNegative(recipeInput.getTotalKkal(), "TotalKkal", recipeInput);
+        Utils.validateFieldIsNonNegative(recipeInput.getTotalFats(), "TotalFats", recipeInput);
+        Utils.validateFieldIsNonNegative(recipeInput.getTotalProteins(), "TotalProteins", recipeInput);
+        Utils.validateFieldIsNonNegative(recipeInput.getTotalCarbohydrates(), "TotalCarbohydrates", recipeInput);
 
     }
 

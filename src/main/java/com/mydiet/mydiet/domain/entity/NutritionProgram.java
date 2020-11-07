@@ -19,6 +19,7 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 public class NutritionProgram {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true)
     @JsonProperty(access = READ_ONLY)
     private Long number;       // preview
@@ -43,6 +44,6 @@ public class NutritionProgram {
     @OneToMany
     private List<DailyDiet> dailyDietList;  // as a user I want to ..?
 
-    private Short numberOfMeals;
+    private Short dailyNumberOfMeals;
 
 }

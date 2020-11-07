@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.infrastructure;
 
+import com.mydiet.mydiet.domain.dto.input.ConversionUnitsInput;
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
 import com.mydiet.mydiet.domain.exception.GenericException;
 import com.mydiet.mydiet.repository.ConversionUnitsRepository;
@@ -28,23 +29,40 @@ public class ConversionUnitsService {
     private final ConversionUnitsRepository conversionUnitsRepository;
     private final ProductService productService;
 
+    private Double getCoeffitientByName(ConversionUnits conversionUnits, QuantityUnit unit) {
+        switch (unit) {
+            case CUP: return conversionUnits.getCup();
+            case DROP: return conversionUnits.getDrop();
+            case TABLESPOON: return conversionUnits.getTablespoon();
+            case TEASPOON: return conversionUnits.getTeaspoon();
+            case GLASS: return conversionUnits.getGlass();
+            case PINCH: return conversionUnits.getPinch();
+            case PIECE: return conversionUnits.getPiece();
+            default:
+                throw new IllegalArgumentException(String.format("Not supported unit to convert: %s", unit));
+        }
+    }
+
     public Double getCoefficientFor(QuantityUnit initUnit, Long productId) {
         if (!CONVERTIBLE_UNITS.contains(initUnit)) {
             return getPredefinedCoefficientFor(initUnit);
         }
 
-        var convCoefList = conversionUnitsRepository.findConversionCoefficients(initUnit.name().toLowerCase(), productId);
+        //var optionalConvCoef = conversionUnitsRepository.findConversionCoefficients(initUnit.name(), productId);
+        var convCoefsForUnits = conversionUnitsRepository.findByProductId(productId);
 
-        if (convCoefList.isEmpty()) {
+        if (convCoefsForUnits.isEmpty()) {
             var message = String.format("Failed to convert from %s to next unit for Product %s. " +
                     "Conversion coefficient does not exist", initUnit, productId);
             log.error("Conversiont error: {}", message);
 
             throw new GenericException(message);
         }
-        log.debug("conversion coefficient for {} is {}", initUnit, convCoefList.get(0));
+        var coef = getCoeffitientByName(convCoefsForUnits.get(), initUnit);
 
-        return convCoefList.get(0);
+        log.info("conversion coefficient for {} is {}", initUnit, coef);
+
+        return coef;
     }
 
     private Double getPredefinedCoefficientFor(QuantityUnit initUnit) {
@@ -81,18 +99,18 @@ public class ConversionUnitsService {
                 .collect(Collectors.toList());
     }
 
-    public ConversionUnits updateConvCoefficientsForProduct(Long productId, ConversionUnits conversionUnitsUpdate) {
+    public ConversionUnits updateConvCoefficientsForProduct(Long productId,
+                                                            ConversionUnitsInput conversionUnitsUpdateInput) {
         var product = productService.getProductOrThrow(productId);
-        validateConversionUnits(conversionUnitsUpdate);
+        validateConversionUnitsInput(conversionUnitsUpdateInput);
 
         var optionalConversionUnits = conversionUnitsRepository.findByProductId(productId);
         if (optionalConversionUnits.isEmpty()) {
-            conversionUnitsUpdate.setProduct(product);
-            return conversionUnitsRepository.save(conversionUnitsUpdate);
+            return createConvCoefficientsForProduct(productId, conversionUnitsUpdateInput);
 
         } else {
             var convUnits = optionalConversionUnits.get();
-            updateByNonNullFields(convUnits, conversionUnitsUpdate);
+            updateByNonNullFields(convUnits, convUnits);
             return conversionUnitsRepository.save(convUnits);
         }
     }
@@ -107,24 +125,33 @@ public class ConversionUnitsService {
         Optional.ofNullable(conversionUnitsUpdate.getTeaspoon()).ifPresent(initConversionUnits::setTeaspoon);
     }
 
-    public ConversionUnits createConvCoefficientsForProduct(Long productId, ConversionUnits conversionUnits) {
+    public ConversionUnits createConvCoefficientsForProduct(Long productId, ConversionUnitsInput conversionUnitsInput) {
         var product = productService.getProductOrThrow(productId);
-        validateConversionUnits(conversionUnits);
+        validateConversionUnitsInput(conversionUnitsInput);
 
-        conversionUnits.setProduct(product);
+        var convUnits = ConversionUnits.builder()
+                .cup(conversionUnitsInput.getCup())
+                .drop(conversionUnitsInput.getDrop())
+                .glass(conversionUnitsInput.getGlass())
+                .piece(conversionUnitsInput.getPiece())
+                .pinch(conversionUnitsInput.getPinch())
+                .tablespoon(conversionUnitsInput.getTablespoon())
+                .teaspoon(conversionUnitsInput.getTeaspoon())
+                .product(product)
+                .build();
 
-        return conversionUnitsRepository.save(conversionUnits);
+        return conversionUnitsRepository.save(convUnits);
     }
 
 
-    private void validateConversionUnits(ConversionUnits conversionUnits) {
-        Utils.validateEntityValueIsNonNegative(conversionUnits.getTeaspoon(), "teaspoon", conversionUnits);
-        Utils.validateEntityValueIsNonNegative(conversionUnits.getTablespoon(), "tablespoon", conversionUnits);
-        Utils.validateEntityValueIsNonNegative(conversionUnits.getCup(), "cup", conversionUnits);
-        Utils.validateEntityValueIsNonNegative(conversionUnits.getDrop(), "drop", conversionUnits);
-        Utils.validateEntityValueIsNonNegative(conversionUnits.getGlass(), "glass", conversionUnits);
-        Utils.validateEntityValueIsNonNegative(conversionUnits.getPiece(), "piece", conversionUnits);
-        Utils.validateEntityValueIsNonNegative(conversionUnits.getPinch(), "pinch", conversionUnits);
+    private void validateConversionUnitsInput(ConversionUnitsInput convUnitsInput) {
+        Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getTeaspoon(), "teaspoon", convUnitsInput);
+        Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getTablespoon(), "tablespoon", convUnitsInput);
+        Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getCup(), "cup", convUnitsInput);
+        Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getDrop(), "drop", convUnitsInput);
+        Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getGlass(), "glass", convUnitsInput);
+        Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getPiece(), "piece", convUnitsInput);
+        Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getPinch(), "pinch", convUnitsInput);
     }
 
 

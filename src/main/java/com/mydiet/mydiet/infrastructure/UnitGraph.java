@@ -2,14 +2,19 @@ package com.mydiet.mydiet.infrastructure;
 
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
 import com.mydiet.mydiet.domain.exception.GenericException;
+import lombok.ToString;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static com.mydiet.mydiet.domain.entity.QuantityUnit.*;
 import static com.mydiet.mydiet.infrastructure.Connection.connection;
 import static com.mydiet.mydiet.infrastructure.Consistence.*;
 
+@Slf4j
 @UtilityClass
 public class UnitGraph {
 
@@ -97,28 +102,36 @@ public class UnitGraph {
     }
 
     public static int compare(QuantityUnit unit1, QuantityUnit unit2, Consistence consistence) {
+        log.info("compare {} and {} for consistence {}", unit1, unit2, consistence);
+
         if (unit1 == unit2) {
+            log.info("{} == {}", unit1, unit2);
             return 0;
         }
 
         var node1 = nodeMap.get(unit1);
         var node2 = nodeMap.get(unit2);
 
+        log.info("node for {} is {} | node for {} is {}", unit1, node1, unit2, node2);
+
         var firstIsAchievableFromSecond = node1.isAchievableFrom(node2, consistence);
         var secondIsAchievableFromFirst = node2.isAchievableFrom(node1, consistence);
 
         if (firstIsAchievableFromSecond && !secondIsAchievableFromFirst) {
+            log.info("{} > {}", unit1, unit2);
             return 1;
         }
 
         if (secondIsAchievableFromFirst && !firstIsAchievableFromSecond) {
+            log.info("{} < {}", unit1, unit2);
             return -1;
         }
 
+        log.error("Failed to compare units: {} and {}", unit1, unit2);
         throw new GenericException("Failed to compare units due to inconsistent configuration of UnitGraph");
     }
 
-
+    @ToString(exclude = {"consistenceNodeMap"})
     private static class Node {
 
         private final QuantityUnit unit;
@@ -136,9 +149,9 @@ public class UnitGraph {
         }
 
         Node getNextNode(Consistence consistence) {
-            if (consistenceNodeMap.size() == 1) {
+           /* if (consistenceNodeMap.size() == 1) {
                 return consistenceNodeMap.entrySet().iterator().next().getValue();
-            }
+            }*/
 
             return consistenceNodeMap.getOrDefault(consistence, null);
         }
@@ -148,17 +161,23 @@ public class UnitGraph {
         }
 
         public boolean isAchievableFrom(Node node, Consistence consistence) {
-            if (node == this) {
+            if (this.unit.equals(node.unit)) {
                 return true;
             }
 
             var nextNode = node.getNextNode(consistence);
 
+            int i = 0;
             while (nextNode != null) {
-                if (nextNode == this) {
+                log.info("nextNode is: {}", nextNode);
+                if (this.unit.equals(nextNode.unit)) {
                     return true;
                 }
-                nextNode = node.getNextNode(consistence);
+                nextNode = nextNode.getNextNode(consistence);
+                i++;
+                if (i > 5) {
+                    break;
+                }
             }
 
             return false;

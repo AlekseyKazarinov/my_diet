@@ -1,6 +1,7 @@
 package com.mydiet.mydiet.config;
 
 import com.mydiet.mydiet.domain.exception.BadRequestException;
+import com.mydiet.mydiet.domain.exception.GenericException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import org.springframework.http.HttpStatus;
@@ -27,5 +28,14 @@ public class ExceptionMapper extends ResponseEntityExceptionHandler  {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+    @ExceptionHandler(value = GenericException.class)
+    public ResponseEntity<ErrorMessage> toResponse(GenericException e) {
+        var errorMessage = ErrorMessage.builder()
+                .message(e.getMessage())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
     }
 }

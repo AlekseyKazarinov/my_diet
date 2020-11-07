@@ -1,11 +1,12 @@
 package com.mydiet.mydiet.service;
 
 import com.google.common.base.Preconditions;
-import com.mydiet.mydiet.domain.dto.ProductInput;
+import com.mydiet.mydiet.domain.dto.input.ProductInput;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.ProductType;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
+import com.mydiet.mydiet.infrastructure.Consistence;
 import com.mydiet.mydiet.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ public class ProductService {
         var product = Product.builder()
                 .name(productCreationInput.getName())
                 .productType(ProductType.of(productCreationInput.getProductType()))
+                .consistence(Consistence.of(productCreationInput.getConsistence()))
                 .build();
 
         //return product;
@@ -70,8 +72,9 @@ public class ProductService {
     public void validateProductInput(ProductInput input) {
         Preconditions.checkNotNull(input, "Product is null");
 
-        Utils.validateEntityFieldIsSet(input.getName(), "Name", input);
+        Utils.validateStringFieldIsSet(input.getName(), "Name", input);
         ProductType.validateDescription(input.getProductType());
+        Consistence.validateConsistence(input.getConsistence());
     }
 
 }

@@ -1,6 +1,6 @@
 package com.mydiet.mydiet.service;
 
-import com.mydiet.mydiet.domain.dto.NutritionProgramInput;
+import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
@@ -29,11 +29,11 @@ public class NutritionProgramService {
     }
 
     private void validateNutritionProgramInput(NutritionProgramInput programInput) {
-        Utils.validateEntityFieldIsSet(programInput.getName(), "name", programInput);
-        Utils.validateEntityFieldIsSet(programInput.getDescription(), "description", programInput);
-        //Utils.validateEntityFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
-        var numberOfMeals = programInput.getNumberOfMeals();
-        Utils.validateEntityValueIsNonNegative(numberOfMeals, "number of meals", programInput);
+        Utils.validateStringFieldIsSet(programInput.getName(), "name", programInput);
+        Utils.validateStringFieldIsSet(programInput.getDescription(), "description", programInput);
+        //Utils.validateStringFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
+        var numberOfMeals = programInput.getDailyNumberOfMeals();
+        Utils.validateFieldIsNonNegative(numberOfMeals, "number of meals", programInput);
 
         for (var dailyDietInput : programInput.getDailyDietInputs()) {
             dailyDietService.validateDailyDietInput(dailyDietInput);
@@ -52,7 +52,7 @@ public class NutritionProgramService {
                 .name(input.getName())
                 .description(input.getDescription())
                 .backgroundColour(input.getBackgroundColour())
-                .numberOfMeals(input.getNumberOfMeals())
+                .dailyNumberOfMeals(input.getDailyNumberOfMeals())
                 .dailyDietList(dailyDietList)
                 .build();
 

@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.controller;
 
+import com.mydiet.mydiet.domain.dto.input.ConversionUnitsInput;
 import com.mydiet.mydiet.infrastructure.ConversionUnits;
 import com.mydiet.mydiet.infrastructure.ConversionUnitsService;
 import com.mydiet.mydiet.service.ProductService;
@@ -41,7 +42,7 @@ public class ProductController {
     @PatchMapping("/{productId}/conversion-units")
     public ResponseEntity<ConversionUnits> updateConversionCoefficientsForProduct(
             @PathVariable Long productId,
-            @RequestBody ConversionUnits convUnitsUpdate
+            @RequestBody ConversionUnitsInput convUnitsUpdate
     ) {
         var convUnits = conversionUnitsService.updateConvCoefficientsForProduct(productId, convUnitsUpdate);
         return ResponseEntity.ok(convUnits);

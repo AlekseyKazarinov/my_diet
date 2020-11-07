@@ -1,6 +1,6 @@
 package com.mydiet.mydiet.service;
 
-import com.mydiet.mydiet.domain.dto.DailyDietInput;
+import com.mydiet.mydiet.domain.dto.input.DailyDietInput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
@@ -88,7 +88,7 @@ public class DailyDietService {
     }
 
     public DailyDiet updateDailyDietName(Long dailyDietId, String newDailyDietName) {
-        Utils.validateTextFieldIsSet(newDailyDietName, "Daily Diet name");
+        Utils.validateTextVariableIsSet(newDailyDietName, "Daily Diet name");
         var dailyDiet = getDailyDietOrElseThrow(dailyDietId);
         dailyDiet.setName(newDailyDietName);
         return dailyDietRepository.save(dailyDiet);

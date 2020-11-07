@@ -1,5 +1,7 @@
-package com.mydiet.mydiet.domain.dto;
+package com.mydiet.mydiet.domain.dto.input;
 
+import com.mydiet.mydiet.domain.dto.input.ImageCreationInput;
+import com.mydiet.mydiet.domain.dto.input.IngredientInput;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

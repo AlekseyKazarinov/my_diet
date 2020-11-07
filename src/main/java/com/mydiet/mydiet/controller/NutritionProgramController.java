@@ -1,7 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
-import com.mydiet.mydiet.domain.dto.NutritionProgramInput;
+import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.service.NutritionProgramService;
 import io.swagger.annotations.*;
@@ -53,6 +53,7 @@ public class NutritionProgramController {
         return ResponseEntity.ok(numberOfPrograms);
     }
 
+    // todo: it does not work. Need a fix!
     @PostMapping(path = "/{programNumber}/daily-diet/{dailyDietId}")
     @ApiOperation(value = "Add an existing Daily Diet to Nutrition Program")
     @ApiResponse(code = 200, message = "Daily Diet was successfully added", response = NutritionProgram.class)

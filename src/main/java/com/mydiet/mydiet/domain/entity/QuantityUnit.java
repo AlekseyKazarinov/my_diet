@@ -39,14 +39,15 @@ public enum QuantityUnit {
     private static String NOT_EXIST = "Quantity Unit %s does not exist";
 
     private static Set<String> unitNames = Arrays.stream(QuantityUnit.values())
-            .flatMap(unit -> Stream.of(unit.description, unit.abbreviation))
-            .collect(Collectors.toUnmodifiableSet());
+            .flatMap(unit -> Stream.of(unit.name(), unit.description, unit.abbreviation))
+            .collect(Collectors.toSet());
 
     // todo: use custom Json(De)Serializer to convert from string and back
     public static QuantityUnit of(String unit) {
         for (var quantityUnit : QuantityUnit.values()) {
 
-            if (quantityUnit.description.equals(unit)
+            if (quantityUnit.name().equalsIgnoreCase(unit)
+                    ||quantityUnit.description.equals(unit)
                     || quantityUnit.abbreviation.equals(unit)) {
 
                 return quantityUnit;

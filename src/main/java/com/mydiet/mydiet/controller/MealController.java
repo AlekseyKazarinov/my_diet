@@ -1,7 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
-import com.mydiet.mydiet.domain.dto.MealInput;
+import com.mydiet.mydiet.domain.dto.input.MealInput;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.service.MealService;
 import io.swagger.annotations.Api;
@@ -59,10 +59,28 @@ public class MealController {
     }
 
     @GetMapping
+    @ApiOperation(value = "Get all existing Meals")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "All Meals are received", response = Meal[].class),
+            @ApiResponse(code = 204, message = "There are no existing Meals", response = Void.class)})
+    public ResponseEntity<List<Meal>> getAllExistingMeals() {
+
+        var listOfMeals = mealService.findAllMeals();
+
+        if (listOfMeals.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+
+        } else {
+            return ResponseEntity.status(HttpStatus.OK).body(listOfMeals);
+        }
+    }
+
+    @GetMapping("/food-time/{foodTime}")
     @ApiOperation(value = "Get all Meals by FoodTime")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "new FoodTime is set for Meal", response = Meal[].class),
-            @ApiResponse(code = 204, message = "There are no Meals for that FoodTime")})
-    public ResponseEntity<List<Meal>> getAllMealsByFoodTime(@RequestParam("food-time") String foodTime) {
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "All Meals for this FoodTime are received",response = Meal[].class),
+            @ApiResponse(code = 204, message = "There are no Meals for that FoodTime")
+    })
+    public ResponseEntity<List<Meal>> getAllMealsByFoodTime(@PathVariable String foodTime) {
 
         var listOfMeals = mealService.getMealsByFoodTime(foodTime);
 
