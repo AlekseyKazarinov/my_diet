@@ -29,18 +29,32 @@ public class ConversionUnitsService {
     private final ConversionUnitsRepository conversionUnitsRepository;
     private final ProductService productService;
 
-    private Double getCoeffitientByName(ConversionUnits conversionUnits, QuantityUnit unit) {
+    private Double getCoefficientByName(ConversionUnits conversionUnits, QuantityUnit unit) {
+        Double ratio;
+
         switch (unit) {
-            case CUP: return conversionUnits.getCup();
-            case DROP: return conversionUnits.getDrop();
-            case TABLESPOON: return conversionUnits.getTablespoon();
-            case TEASPOON: return conversionUnits.getTeaspoon();
-            case GLASS: return conversionUnits.getGlass();
-            case PINCH: return conversionUnits.getPinch();
-            case PIECE: return conversionUnits.getPiece();
+            case CUP: ratio = conversionUnits.getCup();
+                break;
+            case DROP: ratio =  conversionUnits.getDrop();
+                break;
+            case TABLESPOON: ratio =  conversionUnits.getTablespoon();
+                break;
+            case TEASPOON: ratio =  conversionUnits.getTeaspoon();
+                break;
+            case GLASS: ratio =  conversionUnits.getGlass();
+                break;
+            case PINCH: ratio =  conversionUnits.getPinch();
+                break;
+            case PIECE: ratio =  conversionUnits.getPiece();
+                break;
             default:
                 throw new IllegalArgumentException(String.format("Not supported unit to convert: %s", unit));
         }
+
+        if (ratio == null || ratio.equals(0.0)) {
+            throw new IllegalArgumentException(String.format("Conversion coefficient was not declared for unit %s", unit));
+        }
+        return ratio;
     }
 
     public Double getCoefficientFor(QuantityUnit initUnit, Long productId) {
@@ -58,7 +72,7 @@ public class ConversionUnitsService {
 
             throw new GenericException(message);
         }
-        var coef = getCoeffitientByName(convCoefsForUnits.get(), initUnit);
+        var coef = getCoefficientByName(convCoefsForUnits.get(), initUnit);
 
         log.info("conversion coefficient for {} is {}", initUnit, coef);
 

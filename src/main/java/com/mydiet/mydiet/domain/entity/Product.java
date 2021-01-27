@@ -7,15 +7,19 @@ import lombok.*;
 
 import javax.persistence.*;
 
+import java.util.Set;
+
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 @Entity
+@Table(name = "PRODUCT")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString(exclude = "ingredients")
 public class Product {
 
     @Id
@@ -39,5 +43,9 @@ public class Product {
 
     @JsonProperty(access = WRITE_ONLY)
     private Consistence consistence;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "product", orphanRemoval = false)
+    private Set<Ingredient> relatedIngredients;
 
 }

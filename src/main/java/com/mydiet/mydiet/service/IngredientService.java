@@ -5,6 +5,7 @@ import com.mydiet.mydiet.domain.dto.input.IngredientInput;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
+import com.mydiet.mydiet.event.SourceEntity;
 import com.mydiet.mydiet.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ public class IngredientService {
 
     private final ProductService       productService;
     private final IngredientRepository ingredientRepository;
+    private final DomainEventPublisher domainEventPublisher;
 
     public void validateIngredientCreationInput(IngredientInput ingredient) {
         Preconditions.checkNotNull(ingredient, "Ingredient is null");
@@ -38,7 +40,6 @@ public class IngredientService {
                 .totalQuantity(ingredientCreationInput.getTotalQuantity())
                 .build();
 
-        //return ingredient;
         return saveIfOriginal(ingredient);
     }
 
@@ -62,15 +63,23 @@ public class IngredientService {
                 );
     }
 
-    public Ingredient updateIngredient(Long ingredientId, IngredientInput ingredientUpdateInput) {
+    private Ingredient updateIngredient(Long ingredientId, IngredientInput ingredientUpdateInput) {
         var ingredient = getIngredientOrThrow(ingredientId);
 
         productService.updateProduct(ingredient.getProduct().getId(), ingredientUpdateInput.getProduct());
         ingredient.setTotalQuantity(ingredientUpdateInput.getTotalQuantity());
         ingredient.setUnit(QuantityUnit.of(ingredientUpdateInput.getUnit()));
 
-        return ingredientRepository.save(ingredient);
+        ingredient = ingredientRepository.save(ingredient);
+        domainEventPublisher.publishEvent(ingredientId, SourceEntity.INGREDIENT);
+        return ingredient;
     }
+
+    public Ingredient updateValidatedIngredient(Long ingredientId, IngredientInput ingredientUpdateInput) {
+        validateIngredientCreationInput(ingredientUpdateInput);
+        return updateIngredient(ingredientId, ingredientUpdateInput);
+    }
+
 
     public Ingredient createValidatedIngredient(IngredientInput ingredientCreationInput) {
         validateIngredientCreationInput(ingredientCreationInput);

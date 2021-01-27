@@ -18,6 +18,7 @@ public enum ProductType {
     VEGETABLE("Овощ",1),
     FISH("Рыба",2),
     MEAT("Мясо",2),
+    SEAFOOD("Морепродукты", 2),
     DAIRY("Молочный продукт",3),
     GROCERY("Бакалея",4),
     OTHER("Разное",5);

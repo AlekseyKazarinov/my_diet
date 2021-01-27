@@ -19,7 +19,7 @@ public class RecipeInput {
     private List<IngredientInput> ingredients;
     private ImageCreationInput    image;
 
-    private Double totalKkal;
+    private Double totalKcal;
     private Double totalProteins;
     private Double totalFats;
     private Double totalCarbohydrates;

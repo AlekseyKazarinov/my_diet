@@ -2,11 +2,11 @@ package com.mydiet.mydiet.service;
 
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
-import com.mydiet.mydiet.domain.entity.DailyDiet;
-import com.mydiet.mydiet.domain.entity.NutritionProgram;
-import com.mydiet.mydiet.domain.entity.Product;
+import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
+import com.mydiet.mydiet.infrastructure.ShoppingListService;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
+import com.mydiet.mydiet.repository.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
@@ -15,6 +15,8 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 
+import static com.mydiet.mydiet.domain.entity.Status.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,8 @@ public class NutritionProgramService {
 
     private final DailyDietService dailyDietService;
     private final NutritionProgramRepository nutritionProgramRepository;
+    private final ShoppingListService shoppingListService;
+    private final ShoppingListRepository shoppingListRepository;
 
     public NutritionProgram createValidatedNutritionProgram(NutritionProgramInput programCreationInput) {
         validateNutritionProgramInput(programCreationInput);
@@ -53,7 +57,8 @@ public class NutritionProgramService {
                 .description(input.getDescription())
                 .backgroundColour(input.getBackgroundColour())
                 .dailyNumberOfMeals(input.getDailyNumberOfMeals())
-                .dailyDietList(dailyDietList)
+                .dailyDiets(dailyDietList)
+                .status(DRAFT)
                 .build();
 
         return saveIfOriginal(nutritionProgram);
@@ -86,6 +91,51 @@ public class NutritionProgramService {
         return nutritionProgramRepository.count();
     }
 
+    public NutritionProgram setStatusFor(NutritionProgram program, Status status) {
+        if (program.getStatus() == status) {
+            return program;
+        }
+
+        switch (status) {
+            case DRAFT:
+                shoppingListRepository.deleteById(program.getNumber());
+                break;
+            case ACCEPTED:
+                shoppingListService.generateShoppingListFor(program);
+                break;
+            case PUBLISHED:
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        String.format("Unable to set status %s for Nutrition Program %s", status, program.getNumber())
+                );
+        }
+        program.setStatus(status);
+        return nutritionProgramRepository.save(program);
+    }
+
+    public NutritionProgram revertStatusFor(NutritionProgram program) {
+        if (program.getStatus() == null) {
+            log.warn("Can not revert Nutrition Program {} with null status. Ignore", program.getNumber());
+            return program;
+        }
+
+        switch (program.getStatus()) {
+            case DRAFT:
+                return program;
+            case ACCEPTED:
+                program.setStatus(DRAFT);
+                return nutritionProgramRepository.save(program);
+            case PUBLISHED:
+                program.setStatus(ACCEPTED);
+                return nutritionProgramRepository.save(program);
+            default:
+                throw new IllegalArgumentException(
+                        String.format("Unable to revise status %s for Nutrition Program %s", program.getStatus(), program.getNumber())
+                );
+        }
+    }
+
     public Optional<NutritionProgramOutput> getBriefFormOfNutritionProgram(Long programNumber) {
         var optionalProgram = findNutritionProgram(programNumber);
 
@@ -101,7 +151,7 @@ public class NutritionProgramService {
     }
 
     public Integer getNumberOfWeeksFor(NutritionProgram nutritionProgram) {
-        var numberOfDays = nutritionProgram.getDailyDietList().size();
+        var numberOfDays = nutritionProgram.getDailyDiets().size();
         var fullWeeks = numberOfDays / 7;
         var remainder = numberOfDays % 7;
 
@@ -121,7 +171,7 @@ public class NutritionProgramService {
             return Collections.emptyList();
         }
 
-        var dailyDiets = nutritionProgram.getDailyDietList();
+        var dailyDiets = nutritionProgram.getDailyDiets();
         var firstDay = 7 * (weekNumber - 1);
         var lastDay = Math.min( 7 * weekNumber, dailyDiets.size());
 
@@ -131,7 +181,7 @@ public class NutritionProgramService {
     public Set<Product> getListOfProductsFor(NutritionProgram nutritionProgram) {
         var productSet = new HashSet<Product>();
 
-        nutritionProgram.getDailyDietList()
+        nutritionProgram.getDailyDiets()
                 .forEach(diet -> {
                     diet.getMeals()
                         .forEach(meal -> {
@@ -143,6 +193,18 @@ public class NutritionProgramService {
         return productSet;
     }
 
-    // todo: list of products taking into account amount
+    public NutritionProgram acceptProgram(Long programNumber) {
+        var program = getProgramOrElseThrow(programNumber);
+        return setStatusFor(program, ACCEPTED);
+    }
 
+    public NutritionProgram publishProgram(Long programNumber) {
+        var program = getProgramOrElseThrow(programNumber);
+        return setStatusFor(program, PUBLISHED);
+    }
+
+    public NutritionProgram revertProgram(Long programNumber) {
+        var program = getProgramOrElseThrow(programNumber);
+        return revertStatusFor(program);
+    }
 }

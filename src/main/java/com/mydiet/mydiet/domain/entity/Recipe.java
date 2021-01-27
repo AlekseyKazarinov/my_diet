@@ -41,9 +41,13 @@ public class Recipe {
             inverseJoinColumns=@JoinColumn(name = "INGREDIENT_ID", referencedColumnName = "ID"))
     private List<Ingredient> ingredients;
 
-    private Double totalKkal;
+    private Double totalKcal;
     private Double totalProteins;
     private Double totalFats;
     private Double totalCarbohydrates;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "recipe")
+    private Set<Meal> relatedMeals;
 
 }

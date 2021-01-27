@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.stereotype.Service;
@@ -38,29 +39,8 @@ public class DailyDiet {
     )
     private Set<Meal> meals;
 
-    //private int numberOfMeals;
-/*
-    public void addMeal(Meal meal) {
-        if (mealList.size() == numberOfMeals) {
-
-            throw new IndexOutOfBoundsException("Daily Diet " + id + " already has " + numberOfMeals + " meals");
-        }
-
-        mealList.add(meal);
-        numberOfMeals++;
-    }
-
-    public void removeMeal(int index) {
-        mealList.remove(index);
-        numberOfMeals--;
-    }
-
-    public void removeMealFor(FoodTime foodTime) {
-        var removed = mealList.removeIf(meal -> meal.getFoodTime() == foodTime);
-
-        if (removed) {
-            numberOfMeals--;
-        }
-    }*/
+    @JsonIgnore
+    @ManyToMany(mappedBy = "dailyDiets")
+    private Set<NutritionProgram> relatedPrograms;
 
 }

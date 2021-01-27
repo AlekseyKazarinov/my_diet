@@ -1,9 +1,12 @@
 package com.mydiet.mydiet.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
+
+import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
@@ -25,5 +28,9 @@ public class Meal {
     private Recipe recipe;
 
     private FoodTime foodTime;
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "meals")
+    private Set<DailyDiet> relatedDailyDiets;
 
 }

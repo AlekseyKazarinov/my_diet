@@ -26,7 +26,6 @@ public class ProductService {
                 .consistence(Consistence.of(productCreationInput.getConsistence()))
                 .build();
 
-        //return product;
         return saveProduct(product);
     }
 

@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -32,6 +33,9 @@ public class NutritionProgram {
     @JsonProperty(access = READ_ONLY)
     private Instant lastModifiedAt;
 
+    @JsonIgnore
+    private Status status;
+
     private String name;             // preview
     private String shortDescription; // preview
     private String description;      // todo: stub for language: default = Russian
@@ -41,8 +45,8 @@ public class NutritionProgram {
 
     private String backgroundColour;  // preview // todo: clarify format
 
-    @OneToMany
-    private List<DailyDiet> dailyDietList;  // as a user I want to ..?
+    @ManyToMany
+    private List<DailyDiet> dailyDiets;  // as a user I want to ..?
 
     private Short dailyNumberOfMeals;
 

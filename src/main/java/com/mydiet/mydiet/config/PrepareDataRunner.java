@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -55,7 +56,7 @@ public class PrepareDataRunner implements CommandLineRunner {
                 .totalProteins(12.0)
                 .totalFats(12.0)
                 .name("fish")
-                .totalKkal(100.0)
+                .totalKcal(100.0)
                 .build();
 
         recipe = recipeRepository.save(recipe);
@@ -85,5 +86,9 @@ public class PrepareDataRunner implements CommandLineRunner {
         dailyDiet.setMeals(listOfMeals);
         dailyDiet.setName("fish diet");
         dailyDietRepository.save(dailyDiet);
+
+        var pr = productRepository.findById(1L).get();
+
+        log.info("list of ingredients: {}", pr.getRelatedIngredients());
     }
 }

@@ -49,7 +49,7 @@ public class RecipeService {
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
                 .ingredients(ingredients)
-                .totalKkal(recipeCreationInput.getTotalKkal())
+                .totalKcal(recipeCreationInput.getTotalKcal())
                 .totalProteins(recipeCreationInput.getTotalProteins())
                 .totalFats(recipeCreationInput.getTotalFats())
                 .totalCarbohydrates(recipeCreationInput.getTotalCarbohydrates())
@@ -101,7 +101,7 @@ public class RecipeService {
             recipe.setImage(updatedImage);
         }
 
-        recipe.setTotalKkal(recipeUpdateInput.getTotalKkal());
+        recipe.setTotalKcal(recipeUpdateInput.getTotalKcal());
         recipe.setTotalProteins(recipeUpdateInput.getTotalProteins());
         recipe.setTotalCarbohydrates(recipeUpdateInput.getTotalCarbohydrates());
         recipe.setTotalFats(recipeUpdateInput.getTotalFats());
@@ -154,28 +154,28 @@ public class RecipeService {
         return image;
     }
 
-    public List<Recipe> findAllRecipesSortedBySimilarityInCalories(Integer kkal, Integer maxCount) {
-        Utils.validateVariableIsNonNegative(kkal, "kkal");
+    public List<Recipe> findAllRecipesSortedBySimilarityInCalories(Integer kcal, Integer maxCount) {
+        Utils.validateVariableIsNonNegative(kcal, "kcal");
         Utils.validateVariableIsNonNegative(maxCount, "maxCount");
 
         var countAbove = maxCount / 2;
         var countBelow = maxCount - countAbove;
 
         var recipePageBelow = recipeRepository.findAllByTotalKkalLessThanEqualOrderByTotalKkalDesc(
-                kkal.doubleValue(), PageRequest.of(0, countBelow)
+                kcal.doubleValue(), PageRequest.of(0, countBelow)
         );
         var recipePageAbove = recipeRepository.findAllByTotalKkalGreaterThanOrderByTotalKkalAsc(
-                kkal.doubleValue(), PageRequest.of(0, countAbove)
+                kcal.doubleValue(), PageRequest.of(0, countAbove)
         );
 
         var recipeList = new ArrayList<>(recipePageAbove.toList());
         recipeList.addAll(recipePageBelow.toList());
 
-        Comparator<Recipe> recipeComparatorByKkal = (recipe1, recipe2) ->
-                                                    {return Double.compare(Math.abs(recipe1.getTotalKkal() - kkal) ,
-                                                                           Math.abs(recipe2.getTotalKkal() - kkal));};
+        Comparator<Recipe> recipeComparatorByKcal = (recipe1, recipe2) ->
+                                                    {return Double.compare(Math.abs(recipe1.getTotalKcal() - kcal) ,
+                                                                           Math.abs(recipe2.getTotalKcal() - kcal));};
 
-        return recipeList.stream().sorted(recipeComparatorByKkal).collect(Collectors.toList());
+        return recipeList.stream().sorted(recipeComparatorByKcal).collect(Collectors.toList());
     }
 
     public void validateRecipeInput(RecipeInput recipeCreationInput) {
@@ -200,7 +200,7 @@ public class RecipeService {
     private void validateRecipeSpecificFields(RecipeInput recipeInput) {
         Utils.validateStringFieldIsSet(recipeInput.getName(), "Name", recipeInput);
         Utils.validateStringFieldIsSet(recipeInput.getDescription(), "Description", recipeInput);
-        Utils.validateFieldIsNonNegative(recipeInput.getTotalKkal(), "TotalKkal", recipeInput);
+        Utils.validateFieldIsNonNegative(recipeInput.getTotalKcal(), "TotalKcal", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalFats(), "TotalFats", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalProteins(), "TotalProteins", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalCarbohydrates(), "TotalCarbohydrates", recipeInput);

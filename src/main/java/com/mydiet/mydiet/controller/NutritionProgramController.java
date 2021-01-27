@@ -53,6 +53,30 @@ public class NutritionProgramController {
         return ResponseEntity.ok(numberOfPrograms);
     }
 
+    @PutMapping(path = "/{programNumber}/accept")
+    @ApiOperation(value = "Set Nutrition Program Status to 'Accepted'")
+    @ApiResponse(code = 202, message = "Accepted", response = NutritionProgram.class)
+    public ResponseEntity<NutritionProgram> acceptProgram(@PathVariable Long programNumber) {
+        var program =  nutritionProgramService.acceptProgram(programNumber);
+        return ResponseEntity.ok(program);
+    }
+
+    @PutMapping(path = "/{programNumber}/publish")
+    @ApiOperation(value = "Set Nutrition Program Status to 'Published'")
+    @ApiResponse(code = 202, message = "Published", response = NutritionProgram.class)
+    public ResponseEntity<NutritionProgram> publishProgram(@PathVariable Long programNumber) {
+        var program =  nutritionProgramService.publishProgram(programNumber);
+        return ResponseEntity.ok(program);
+    }
+
+    @PutMapping(path = "/{programNumber}/revert")
+    @ApiOperation(value = "Revert Nutrition Program Status")
+    @ApiResponse(code = 202, message = "Reverted", response = NutritionProgram.class)
+    public ResponseEntity<NutritionProgram> revertProgram(@PathVariable Long programNumber) {
+        var program =  nutritionProgramService.revertProgram(programNumber);
+        return ResponseEntity.ok(program);
+    }
+
     // todo: it does not work. Need a fix!
     @PostMapping(path = "/{programNumber}/daily-diet/{dailyDietId}")
     @ApiOperation(value = "Add an existing Daily Diet to Nutrition Program")
@@ -61,7 +85,7 @@ public class NutritionProgramController {
             @PathVariable Long programNumber,
             @PathVariable Long dailyDietId
     ) {
-        // todo: implement the functionality
+        // todo: implement the functionality. Ensure program has DRAFT status
         return ResponseEntity.ok(NutritionProgram.builder().build());
     }
 
