@@ -28,6 +28,10 @@ public class UnitGraph {
 
     private static final Map<QuantityUnit, Node> nodeMap = new HashMap<>();
 
+    /**
+     * Unit Graph should be compatible with coefficients declared in
+     * {@link ConversionUnitsService#getPredefinedCoefficientFor(QuantityUnit)}
+     */
     static {
         // solid state
         UnitGraph.create(connection()

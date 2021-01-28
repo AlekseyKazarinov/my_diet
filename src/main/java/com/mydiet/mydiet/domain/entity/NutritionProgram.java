@@ -39,6 +39,7 @@ public class NutritionProgram {
     private String name;             // preview
     private String shortDescription; // preview
     private String description;      // todo: stub for language: default = Russian
+    private String additionalInfo;   // optional
 
     @ManyToOne
     private Image image;             // preview

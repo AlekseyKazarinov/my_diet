@@ -58,18 +58,12 @@ public class UnitGraphService {
         var initUnit = quantity.getUnit();
         var totalCoef = 1.0;
 
-        //var nextStableUnit = UnitGraph.transformToClosestUnitInShoppingList(initUnit, product.getConsistence());
-
-        //log.debug("next stable unit for {} is {}", initUnit, nextStableUnit);
-
-        //totalCoef *= conversionUnitsService.getCoefficientFor(initUnit, product.getId());
         var currentUnit = initUnit;
 
         while(currentUnit != resultUnit) {
             totalCoef *= conversionUnitsService.getCoefficientFor(currentUnit, product.getId());
             currentUnit = UnitGraph.getNextStableUnit(currentUnit, product.getConsistence());
         }
-        log.debug("total coefficient for conversion {} --> {} is {}", initUnit, resultUnit, totalCoef);
 
         quantity.setUnit(resultUnit);
         quantity.setTotalQuantity(quantity.getTotalQuantity() * totalCoef);

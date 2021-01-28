@@ -18,6 +18,7 @@ public class NutritionProgramOutput {
 
     private String name;
     private String description;
+    private String additionalInfo;
 
     private Image image;
     private String backgroundColour;

@@ -12,6 +12,7 @@ public class NutritionProgramInput {
 
     private String name;
     private String description;
+    private String additionalInfo;
 
     private String image;
     private String backgroundColour;

@@ -55,6 +55,7 @@ public class NutritionProgramService {
         var nutritionProgram = NutritionProgram.builder()
                 .name(input.getName())
                 .description(input.getDescription())
+                .additionalInfo(input.getAdditionalInfo())
                 .backgroundColour(input.getBackgroundColour())
                 .dailyNumberOfMeals(input.getDailyNumberOfMeals())
                 .dailyDiets(dailyDietList)

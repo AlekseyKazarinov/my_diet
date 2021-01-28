@@ -79,6 +79,9 @@ public class ConversionUnitsService {
         return coef;
     }
 
+    /**
+     * Coefficients must be consistent with UnitGraph {@link UnitGraph}
+     */
     private Double getPredefinedCoefficientFor(QuantityUnit initUnit) {
         switch (initUnit) {
             case GRAM:
