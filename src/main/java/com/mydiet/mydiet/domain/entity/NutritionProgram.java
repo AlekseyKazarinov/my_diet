@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
@@ -41,10 +42,15 @@ public class NutritionProgram {
     private String description;      // todo: stub for language: default = Russian
     private String additionalInfo;   // optional
 
+    @ElementCollection
+    private Set<Lifestyle> lifestyles;
+
     @ManyToOne
     private Image image;             // preview
 
-    private String backgroundColour;  // preview // todo: clarify format
+    private String dayColour;     // app: dayColour
+    private String mainColour;    // app: colour
+    private String backgroundColour;  // app: lightColour preview  // todo: clarify format
 
     @ManyToMany
     private List<DailyDiet> dailyDiets;  // as a user I want to ..?

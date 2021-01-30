@@ -39,6 +39,9 @@ public class DailyDiet {
     )
     private Set<Meal> meals;
 
+    @ElementCollection
+    private Set<Lifestyle> lifestyles;
+
     @JsonIgnore
     @ManyToMany(mappedBy = "dailyDiets")
     private Set<NutritionProgram> relatedPrograms;

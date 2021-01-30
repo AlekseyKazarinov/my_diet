@@ -35,6 +35,9 @@ public class Recipe {
     private Image   image;
     private String  description;
 
+    @ElementCollection  // https://www.baeldung.com/jpa-tagging https://www.baeldung.com/jpa-tagging-advanced
+    private Set<Lifestyle> lifestyles;
+
     @ManyToMany//(cascade = CascadeType.ALL)
     @JoinTable(name = "RECIPE_INGREDIENT",
             joinColumns=@JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID"),

@@ -95,6 +95,7 @@ public class RecipeService {
         var recipe = getRecipeOrElseThrow(recipeId);
         recipe.setName(recipeUpdateInput.getName());
         recipe.setDescription(recipeUpdateInput.getDescription());
+        recipe.setLifestyles(recipeUpdateInput.getLifestyles());
 
         if (recipe.getImage() != null) {
             var updatedImage = imageService.updateImage(recipe.getImage().getId(), recipeUpdateInput.getImage());

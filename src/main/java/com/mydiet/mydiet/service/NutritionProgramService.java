@@ -1,9 +1,12 @@
 package com.mydiet.mydiet.service;
 
+import com.google.common.collect.Sets;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
+import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
 import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
+import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import com.mydiet.mydiet.repository.ShoppingListRepository;
@@ -12,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -38,24 +42,58 @@ public class NutritionProgramService {
         //Utils.validateStringFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
         var numberOfMeals = programInput.getDailyNumberOfMeals();
         Utils.validateFieldIsNonNegative(numberOfMeals, "number of meals", programInput);
+        Utils.validateCollectionContainsElements(programInput.getDailyDietIds(), "Daily Diet Ids", programInput);
 
-        for (var dailyDietInput : programInput.getDailyDietInputs()) {
-            dailyDietService.validateDailyDietInput(dailyDietInput);
-            dailyDietService.validateDailyDietInputContainsNumberOfMealsEqualTo(numberOfMeals, dailyDietInput);
+        for (var dailyDietId : programInput.getDailyDietIds()) {
+            dailyDietService.validateDailyDietInputContainsNumberOfMealsEqualTo(numberOfMeals, dailyDietId);
+        }
+
+        validateLifestyles(programInput);
+    }
+
+    private void validateLifestyles(NutritionProgramInput programInput) {
+        if (CollectionUtils.isEmpty(programInput.getLifestyles())) {
+            return;
+        }
+
+        for (var dailyDietId : programInput.getDailyDietIds()) {
+            var dailyDiet = dailyDietService.getDailyDietOrElseThrow(dailyDietId);
+
+            if (!dailyDiet.getLifestyles().containsAll(programInput.getLifestyles())) {
+                throw new ValidationException(
+                        String.format("Daily Diet %s does not contain Nutrition Program lifestyles. Expected: %s to be in %s",
+                                dailyDietId,
+                                programInput.getLifestyles(),
+                                dailyDiet.getLifestyles()
+                        )
+                );
+            }
         }
     }
 
     private NutritionProgram createNutritionProgram(NutritionProgramInput input) {
         var dailyDietList = new ArrayList<DailyDiet>();
 
-        for (var dailyDietInput : input.getDailyDietInputs()) {
-            dailyDietList.add(dailyDietService.createDailyDiet(dailyDietInput));
+        for (var dailyDietId : input.getDailyDietIds()) {
+            dailyDietList.add(dailyDietService.getDailyDietOrElseThrow(dailyDietId));
+        }
+
+        var lifestyles = input.getLifestyles();
+
+        if (CollectionUtils.isEmpty(lifestyles)) {
+            lifestyles = dailyDietList.stream()
+                    .map(dailyDiet -> {
+                        return dailyDiet.getLifestyles();
+                    })
+                    .reduce(Sets::intersection)
+                    .orElse(Collections.emptySet());
         }
 
         var nutritionProgram = NutritionProgram.builder()
                 .name(input.getName())
                 .description(input.getDescription())
                 .additionalInfo(input.getAdditionalInfo())
+                .lifestyles(lifestyles)
                 .backgroundColour(input.getBackgroundColour())
                 .dailyNumberOfMeals(input.getDailyNumberOfMeals())
                 .dailyDiets(dailyDietList)
@@ -126,6 +164,7 @@ public class NutritionProgramService {
                 return program;
             case ACCEPTED:
                 program.setStatus(DRAFT);
+                shoppingListRepository.deleteById(program.getNumber());
                 return nutritionProgramRepository.save(program);
             case PUBLISHED:
                 program.setStatus(ACCEPTED);
@@ -207,5 +246,23 @@ public class NutritionProgramService {
     public NutritionProgram revertProgram(Long programNumber) {
         var program = getProgramOrElseThrow(programNumber);
         return revertStatusFor(program);
+    }
+
+    // todo: implement
+    public List<NutritionProgram> getProgramsByKcal(Integer kcal, Integer maxNumber) {
+
+        return Collections.emptyList();
+    }
+
+    // todo: whether we need these methods. We should analyze potential user cases.
+
+    public List<NutritionProgram> getPublishedPrograms(Integer kcal, Set<Lifestyle> lifestyles, ProductExclusion productExclusion) {
+        // todo: implement
+        return Collections.emptyList();
+    }
+
+    public List<NutritionProgram> getProgramsBy(Integer kcal, Status status, Set<Lifestyle> lifestyles, ProductExclusion productExclusion) {
+        // todo: implement
+        return Collections.emptyList();
     }
 }

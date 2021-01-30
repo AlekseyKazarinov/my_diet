@@ -2,13 +2,19 @@ package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
+import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
+import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
+import com.mydiet.mydiet.domain.entity.Status;
 import com.mydiet.mydiet.service.NutritionProgramService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping(path = "/nutrition-programs")
@@ -51,6 +57,19 @@ public class NutritionProgramController {
     public ResponseEntity<Long> countPrograms() {
         var numberOfPrograms = nutritionProgramService.getTotalNumberOfPrograms();
         return ResponseEntity.ok(numberOfPrograms);
+    }
+
+    // todo: получить программы в состоянии DRAFT, ACCEPTED, PUBLISHED
+
+    @GetMapping("/")
+    public ResponseEntity<List<NutritionProgram>> getNutritionPrograms(
+             @RequestParam Integer kcal,
+             @RequestParam Status status,
+             @RequestParam(required = false) Set<Lifestyle> lifestyles,
+             @RequestBody(required = false) ProductExclusion productExclusion
+    ) {
+        var programs = nutritionProgramService.getProgramsBy(kcal, status, lifestyles, productExclusion);
+        return ResponseEntity.ok(programs);
     }
 
     @PutMapping(path = "/{programNumber}/accept")
