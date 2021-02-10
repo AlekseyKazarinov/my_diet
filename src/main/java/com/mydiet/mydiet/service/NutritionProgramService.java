@@ -5,6 +5,7 @@ import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
 import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.*;
+import com.mydiet.mydiet.domain.exception.BadRequestException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
@@ -13,11 +14,16 @@ import com.mydiet.mydiet.repository.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.mydiet.mydiet.domain.entity.Status.*;
 
@@ -25,6 +31,8 @@ import static com.mydiet.mydiet.domain.entity.Status.*;
 @Service
 @RequiredArgsConstructor
 public class NutritionProgramService {
+
+    private static final Integer DEFAULT_MAX_NUMBER = 5;
 
     private final DailyDietService dailyDietService;
     private final NutritionProgramRepository nutritionProgramRepository;
@@ -248,21 +256,197 @@ public class NutritionProgramService {
         return revertStatusFor(program);
     }
 
-    // todo: implement
-    public List<NutritionProgram> getProgramsByKcal(Integer kcal, Integer maxNumber) {
+    public List<NutritionProgram> getLimitedNumberProgramsByKcal(Status status, Integer kcal, Integer maxNumber) {
+        Utils.validateVariableIsNonNegative(kcal, "kcal");
 
-        return Collections.emptyList();
+        if (status == null) {
+            throw new IllegalArgumentException("Status can not be null");
+        }
+
+        var numberAbove = maxNumber / 2;
+        var numberBelow = maxNumber - numberAbove;
+
+        var programPageBelow = nutritionProgramRepository.findAllByStatusAndKcalGreaterThanOrderByKcalAsc(
+                status, kcal, PageRequest.of(0, numberAbove)
+        );
+        var programPageAbove = nutritionProgramRepository.findAllByStatusAndKcalLessThanEqualOrderByKcalDesc(
+                status, kcal, PageRequest.of(0, numberBelow)
+        );
+
+        var programs = new ArrayList<>(programPageAbove.toList());
+        programs.addAll(programPageBelow.toList());
+
+        return programs.stream()
+                .sorted(getDefaultComparatorForSortingByKcal(kcal))
+                .collect(Collectors.toList());
+    }
+
+    private Comparator<NutritionProgram> getDefaultComparatorForSortingByKcal(Integer targetKcal) {
+        return Comparator.comparingInt(program -> Math.abs(program.getKcal() - targetKcal));
     }
 
     // todo: whether we need these methods. We should analyze potential user cases.
 
     public List<NutritionProgram> getPublishedPrograms(Integer kcal, Set<Lifestyle> lifestyles, ProductExclusion productExclusion) {
-        // todo: implement
-        return Collections.emptyList();
+        return getLimitedNumberOfProgramsByKcalAndStatusAndLifestylesAndExcludedProducts(
+                kcal, PUBLISHED, lifestyles, productExclusion, DEFAULT_MAX_NUMBER
+        );
     }
 
-    public List<NutritionProgram> getProgramsBy(Integer kcal, Status status, Set<Lifestyle> lifestyles, ProductExclusion productExclusion) {
-        // todo: implement
-        return Collections.emptyList();
+    public List<NutritionProgram> getProgramsBy(
+            Integer kcal,
+            Integer deltaKcal,
+            Status status,
+            Set<Lifestyle> lifestyles,
+            ProductExclusion productExclusion,
+            Integer maxNumber
+    ) {
+        if (status == null) {
+            status = PUBLISHED;
+        }
+
+        if (maxNumber == null || maxNumber.equals(0)) {
+            maxNumber = DEFAULT_MAX_NUMBER;
+        }
+
+        if (kcal != null && deltaKcal != null) {
+            if (lifestyles == null || lifestyles.isEmpty() || productExclusion != null) {
+                log.warn("Query parameters such as lifestyles and productExclusion will be ignored as kcal and deltaKcal are defined");
+            }
+
+            return getProgramsByKcal(status, kcal, deltaKcal);
+        }
+
+        if (kcal == null) {
+            return nutritionProgramRepository.findAllByStatus(status);
+        }
+
+        if (lifestyles == null && productExclusion == null) {
+            return getLimitedNumberProgramsByKcal(status, kcal, maxNumber);
+        }
+
+        if (lifestyles != null && productExclusion == null) {
+            return getLimitedNumberOfProgramsByKcalAndStatusAndLifestyles(kcal, status, lifestyles, maxNumber);
+        }
+
+        if (lifestyles != null) {
+            return getLimitedNumberOfProgramsByKcalAndStatusAndLifestylesAndExcludedProducts(
+                    kcal, status, lifestyles, productExclusion, maxNumber
+            );
+        }
+
+        // todo: find by status, lifestyles (?)
+
+        throw new BadRequestException("Unsupported combination of input parameters");
+    }
+
+    private List<NutritionProgram> getProgramsByKcal(Status status, Integer targetKcal, Integer deltaKcal) {
+        Utils.validateVariableIsNonNegative(deltaKcal, "deltaKcal");
+        Utils.validateVariableIsNonNegative(targetKcal, "targetKcal");
+
+        var minKcal = targetKcal - deltaKcal;
+        var maxKcal = targetKcal + deltaKcal;
+
+        if (minKcal < 0) {
+            minKcal = 0;
+        }
+
+        return nutritionProgramRepository.findAllByStatusAndKcalIsBetween(status, minKcal, maxKcal);
+    }
+
+    private List<NutritionProgram> getLimitedNumberOfProgramsByKcalAndStatusAndLifestyles(
+            Integer kcal,
+            Status status,
+            Set<Lifestyle> lifestyles,
+            Integer maxNumber
+    ) {
+        Utils.validateVariableIsNonNegative(kcal, "kcal");
+
+        if (status == null ) {
+            throw new IllegalArgumentException("Status can not be null");
+        }
+
+        if (lifestyles == null || lifestyles.isEmpty()) {
+            throw new IllegalArgumentException("Lifestyle can not be null or empty");
+        }
+
+        var pairOfProgramsPages = getProgramsPagesBy(kcal, status, lifestyles, maxNumber);
+
+        return Stream.concat(pairOfProgramsPages.getFirst().stream(), pairOfProgramsPages.getSecond().stream())
+                .sorted(getDefaultComparatorForSortingByKcal(kcal))
+                .collect(Collectors.toList());
+    }
+
+    private Pair<Page<NutritionProgram>, Page<NutritionProgram>> getProgramsPagesBy(
+            Integer kcal,
+            Status status,
+            Set<Lifestyle> lifestyles,
+            Integer maxNumber
+    ) {
+        var numberAbove = maxNumber / 2;
+        var numberBelow = maxNumber - numberAbove;
+
+        var programsPageAbove = nutritionProgramRepository
+                .findAllByStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(
+                        status,
+                        lifestyles,
+                        kcal,
+                        PageRequest.of(0, numberAbove)
+                );
+
+        var programsPageBelow = nutritionProgramRepository
+                .findAllByStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(
+                        status,
+                        lifestyles,
+                        kcal,
+                        PageRequest.of(0, numberBelow)
+                );
+        return Pair.of(programsPageAbove, programsPageBelow);
+    }
+
+    private List<NutritionProgram> getLimitedNumberOfProgramsByKcalAndStatusAndLifestylesAndExcludedProducts(
+            Integer kcal,
+            Status status,
+            Set<Lifestyle> lifestyles,
+            ProductExclusion productExclusion,
+            Integer maxNumber
+    ) {
+        if (status == DRAFT) {
+            throw new BadRequestException("Product exclusion is only available for query with status ACCEPTED or PUBLISHED");
+        }
+
+        var highPrograms = nutritionProgramRepository.findAllByStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(status, lifestyles, kcal);
+        var lowPrograms = nutritionProgramRepository.findAllByStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(status, lifestyles, kcal);
+
+        var numberAbove = maxNumber / 2;
+        var numberBelow = maxNumber - numberAbove;
+
+        var filteredHighPrograms = highPrograms.filter(program -> shoppingListForProgramExcludesProductsIn(productExclusion, program))
+                .limit(numberAbove)
+                .collect(Collectors.toList());
+
+        var filteredLowPrograms = lowPrograms.filter(program -> shoppingListForProgramExcludesProductsIn(productExclusion, program))
+                .limit(numberBelow)
+                .collect(Collectors.toList());
+
+        return Stream.concat(filteredHighPrograms.stream(), filteredLowPrograms.stream())
+                .sorted(getDefaultComparatorForSortingByKcal(kcal))
+                .collect(Collectors.toList());
+    }
+
+    private boolean shoppingListForProgramExcludesProductsIn(ProductExclusion productExclusion, NutritionProgram program) {
+        var shoppingList = shoppingListService.getShoppingListOrElseThrow(program.getNumber());
+
+        var commonProductTypes = shoppingList.getAllProductTypes();
+        commonProductTypes.retainAll(productExclusion.getTypes());
+
+        if (!commonProductTypes.isEmpty()) {
+            return false;
+        }
+
+        var commonProductNames = shoppingList.getAllProductNames();
+        commonProductNames.retainAll(productExclusion.getNames());
+
+        return commonProductNames.isEmpty();
     }
 }

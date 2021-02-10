@@ -42,6 +42,8 @@ public class NutritionProgram {
     private String description;      // todo: stub for language: default = Russian
     private String additionalInfo;   // optional
 
+    private Integer kcal;
+
     @ElementCollection
     private Set<Lifestyle> lifestyles;
 

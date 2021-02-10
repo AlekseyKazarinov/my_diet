@@ -33,7 +33,7 @@ public class ShoppingListService {
         return shoppingListRepository.findById(programNumber);
     }
 
-    private ShoppingList getShoppingListOrElseThrow(Long programNumber) {
+    public ShoppingList getShoppingListOrElseThrow(Long programNumber) {
         return shoppingListRepository.findById(programNumber)
                 .orElseThrow(
                     () -> new NotFoundException("Shopping List was not found for Nutrition Program #" + programNumber)

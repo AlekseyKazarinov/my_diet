@@ -61,14 +61,19 @@ public class NutritionProgramController {
 
     // todo: получить программы в состоянии DRAFT, ACCEPTED, PUBLISHED
 
+    /**
+     * Generic endpoint for retrieving all programs
+     */
     @GetMapping("/")
     public ResponseEntity<List<NutritionProgram>> getNutritionPrograms(
-             @RequestParam Integer kcal,
-             @RequestParam Status status,
+             @RequestParam(required = false) Integer kcal,
+             @RequestParam(required = false) Integer delta,
+             @RequestParam(required = false) Status status,
              @RequestParam(required = false) Set<Lifestyle> lifestyles,
+             @RequestParam(required = false) Integer maxNumber,
              @RequestBody(required = false) ProductExclusion productExclusion
     ) {
-        var programs = nutritionProgramService.getProgramsBy(kcal, status, lifestyles, productExclusion);
+        var programs = nutritionProgramService.getProgramsBy(kcal, delta, status, lifestyles, productExclusion, maxNumber);
         return ResponseEntity.ok(programs);
     }
 

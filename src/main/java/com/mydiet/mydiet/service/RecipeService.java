@@ -162,10 +162,10 @@ public class RecipeService {
         var countAbove = maxCount / 2;
         var countBelow = maxCount - countAbove;
 
-        var recipePageBelow = recipeRepository.findAllByTotalKkalLessThanEqualOrderByTotalKkalDesc(
+        var recipePageBelow = recipeRepository.findAllByTotalKcalLessThanEqualOrderByTotalKcalDesc(
                 kcal.doubleValue(), PageRequest.of(0, countBelow)
         );
-        var recipePageAbove = recipeRepository.findAllByTotalKkalGreaterThanOrderByTotalKkalAsc(
+        var recipePageAbove = recipeRepository.findAllByTotalKcalGreaterThanOrderByTotalKcalAsc(
                 kcal.doubleValue(), PageRequest.of(0, countAbove)
         );
 

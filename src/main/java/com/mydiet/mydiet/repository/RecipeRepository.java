@@ -14,8 +14,8 @@ import java.util.Optional;
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     Optional<Recipe> findRecipeByName(String name);
-    Page<Recipe> findAllByTotalKkalLessThanEqualOrderByTotalKkalDesc(Double totalKkal, Pageable pageRequest);
-    Page<Recipe> findAllByTotalKkalGreaterThanOrderByTotalKkalAsc(Double totalKkal, Pageable pageRequest);
+    Page<Recipe> findAllByTotalKcalLessThanEqualOrderByTotalKcalDesc(Double totalKcal, Pageable pageRequest);
+    Page<Recipe> findAllByTotalKcalGreaterThanOrderByTotalKcalAsc(Double totalKcal, Pageable pageRequest);
 
     @Query("SELECT r FROM RECIPE r JOIN r.lifestyles s WHERE s = :lifestyle")
     List<Recipe> retrieveByTag(@Param("lifestyle") Lifestyle lifestyle);
