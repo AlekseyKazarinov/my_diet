@@ -34,7 +34,7 @@ public class NutritionProgram {
     @JsonProperty(access = READ_ONLY)
     private Instant lastModifiedAt;
 
-    @JsonIgnore
+    @JsonProperty(access = READ_ONLY)
     private Status status;
 
     private String name;             // preview
@@ -50,9 +50,9 @@ public class NutritionProgram {
     @ManyToOne
     private Image image;             // preview
 
-    private String dayColour;     // app: dayColour
-    private String mainColour;    // app: colour
-    private String backgroundColour;  // app: lightColour preview  // todo: clarify format
+    private String dayColor;     // dayColour
+    private String mainColor;    // main color?
+    private String lightColor;   // background color?   preview
 
     @ManyToMany
     private List<DailyDiet> dailyDiets;  // as a user I want to ..?

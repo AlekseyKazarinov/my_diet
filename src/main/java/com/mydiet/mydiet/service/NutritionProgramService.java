@@ -33,6 +33,7 @@ import static com.mydiet.mydiet.domain.entity.Status.*;
 public class NutritionProgramService {
 
     private static final Integer DEFAULT_MAX_NUMBER = 5;
+    private static final String DEFAULT_COLOR = "#FFFFFF";
 
     private final DailyDietService dailyDietService;
     private final NutritionProgramRepository nutritionProgramRepository;
@@ -47,6 +48,7 @@ public class NutritionProgramService {
     private void validateNutritionProgramInput(NutritionProgramInput programInput) {
         Utils.validateStringFieldIsSet(programInput.getName(), "name", programInput);
         Utils.validateStringFieldIsSet(programInput.getDescription(), "description", programInput);
+        Utils.validateStringFieldIsSet(programInput.getShortDescription(), "shortDescription", programInput);
         //Utils.validateStringFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
         var numberOfMeals = programInput.getDailyNumberOfMeals();
         Utils.validateFieldIsNonNegative(numberOfMeals, "number of meals", programInput);
@@ -102,7 +104,9 @@ public class NutritionProgramService {
                 .description(input.getDescription())
                 .additionalInfo(input.getAdditionalInfo())
                 .lifestyles(lifestyles)
-                .backgroundColour(input.getBackgroundColour())
+                .dayColor(Optional.ofNullable(input.getDayColor()).orElse(DEFAULT_COLOR))
+                .mainColor(Optional.ofNullable(input.getMainColor()).orElse(DEFAULT_COLOR))
+                .lightColor(Optional.ofNullable(input.getLightColor()).orElse(DEFAULT_COLOR))
                 .dailyNumberOfMeals(input.getDailyNumberOfMeals())
                 .dailyDiets(dailyDietList)
                 .status(DRAFT)

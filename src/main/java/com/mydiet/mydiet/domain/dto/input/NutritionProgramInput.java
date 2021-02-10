@@ -13,13 +13,18 @@ import java.util.Set;
 public class NutritionProgramInput {
 
     private String name;
+    private String shortDescription;
     private String description;
     private String additionalInfo;
 
     private Set<Lifestyle> lifestyles;
 
     private String image;
-    private String backgroundColour;
+    private String backgroundColour; // todo: delete this field?
+
+    private String dayColor;
+    private String mainColor;
+    private String lightColor;
 
     private List<Long> dailyDietIds;
     private Short      dailyNumberOfMeals;
