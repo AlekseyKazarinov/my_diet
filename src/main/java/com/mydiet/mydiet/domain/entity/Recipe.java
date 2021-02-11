@@ -34,6 +34,7 @@ public class Recipe {
     @ManyToOne
     private Image   image;
     private String  description;
+    private FoodCategory foodCategory;
 
     @ElementCollection  // https://www.baeldung.com/jpa-tagging https://www.baeldung.com/jpa-tagging-advanced
     private Set<Lifestyle> lifestyles;

@@ -48,6 +48,7 @@ public class RecipeService {
         var recipe = Recipe.builder()
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
+                .foodCategory(recipeCreationInput.getFoodCategory())
                 .ingredients(ingredients)
                 .totalKcal(recipeCreationInput.getTotalKcal())
                 .totalProteins(recipeCreationInput.getTotalProteins())
@@ -95,6 +96,7 @@ public class RecipeService {
         var recipe = getRecipeOrElseThrow(recipeId);
         recipe.setName(recipeUpdateInput.getName());
         recipe.setDescription(recipeUpdateInput.getDescription());
+        recipe.setFoodCategory(recipeUpdateInput.getFoodCategory());
         recipe.setLifestyles(recipeUpdateInput.getLifestyles());
 
         if (recipe.getImage() != null) {
@@ -120,7 +122,7 @@ public class RecipeService {
         return recipe;
     }
 
-    //todo: move to repository
+    //todo: move to repository layer
     @SuppressWarnings("unchecked")
     private List<Long> getOriginalIngredientsForRecipe(Long recipeId) {
         var findOriginalIngredientsForRecipe = "SELECT RI.INGREDIENT_ID FROM RECIPE_INGREDIENT RI"

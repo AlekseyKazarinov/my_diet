@@ -2,6 +2,7 @@ package com.mydiet.mydiet.domain.dto.input;
 
 import com.mydiet.mydiet.domain.dto.input.ImageCreationInput;
 import com.mydiet.mydiet.domain.dto.input.IngredientInput;
+import com.mydiet.mydiet.domain.entity.FoodCategory;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class RecipeInput {
 
     private String         name;
     private String         description;
+    private FoodCategory   foodCategory;
     private Set<Lifestyle> lifestyles;
 
     private List<IngredientInput> ingredients;
