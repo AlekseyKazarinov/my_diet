@@ -3,7 +3,7 @@ package com.mydiet.mydiet.service;
 import com.google.common.collect.Sets;
 import com.mydiet.mydiet.domain.dto.input.DailyDietInput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
-import com.mydiet.mydiet.domain.entity.Lifestyle;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
@@ -16,6 +16,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
+
+import static com.mydiet.mydiet.domain.entity.Language.areEqual;
 
 
 @Slf4j
@@ -98,6 +100,27 @@ public class DailyDietService {
                                             meal.getRecipe().getLifestyles()));
                         }
                     });
+        }
+
+        validateLanguages(dailyDietInput);
+    }
+
+    private void validateLanguages(DailyDietInput dailyDietInput) {
+        Language language = null;
+        var captured = false;
+
+        for (var mealId: dailyDietInput.getMealIds()) {
+            var meal = mealService.getMealOrElseThrow(mealId);
+
+            if (!captured) {
+                language = Optional.ofNullable(meal.getRecipe().getLanguage()).orElse(Language.RUSSIAN);
+                captured = true;
+                continue;
+            }
+
+            if (!areEqual(language, meal.getRecipe().getLanguage())) {
+                throw new ValidationException(String.format("Meals with ids %s have no consistent language", dailyDietInput.getMealIds()));
+            }
         }
     }
 

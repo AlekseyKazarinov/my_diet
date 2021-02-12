@@ -30,6 +30,7 @@ public class Recipe {
 
     @Column(unique = true)
     private String   name;
+    private Language language;
 
     @ManyToOne
     private Image   image;

@@ -37,6 +37,8 @@ public class NutritionProgram {
     @JsonProperty(access = READ_ONLY)
     private Status status;
 
+    private Language language;
+
     private String name;             // preview
     private String shortDescription; // preview
     private String description;      // todo: stub for language: default = Russian

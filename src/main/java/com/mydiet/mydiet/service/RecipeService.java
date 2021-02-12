@@ -3,6 +3,7 @@ package com.mydiet.mydiet.service;
 import com.mydiet.mydiet.domain.dto.input.RecipeInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Ingredient;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.domain.exception.GenericException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
@@ -20,6 +21,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.mydiet.mydiet.domain.entity.Language.areEqual;
 
 @Slf4j
 @Service
@@ -48,6 +51,7 @@ public class RecipeService {
         var recipe = Recipe.builder()
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
+                .language(Optional.ofNullable(recipeCreationInput.getLanguage()).orElse(Language.RUSSIAN))
                 .foodCategory(recipeCreationInput.getFoodCategory())
                 .ingredients(ingredients)
                 .totalKcal(recipeCreationInput.getTotalKcal())
@@ -96,6 +100,7 @@ public class RecipeService {
         var recipe = getRecipeOrElseThrow(recipeId);
         recipe.setName(recipeUpdateInput.getName());
         recipe.setDescription(recipeUpdateInput.getDescription());
+        recipe.setLanguage(Optional.ofNullable(recipeUpdateInput.getLanguage()).orElse(Language.RUSSIAN));
         recipe.setFoodCategory(recipeUpdateInput.getFoodCategory());
         recipe.setLifestyles(recipeUpdateInput.getLifestyles());
 
@@ -118,7 +123,7 @@ public class RecipeService {
 
         var originalIngredientIds = getOriginalIngredientsForRecipe(recipeId);
         recipe = recipeRepository.save(recipe);
-        ingredientService.removeIngredientsWithIds(originalIngredientIds);
+        ingredientService.removeIngredientsWithIds(originalIngredientIds); // is it working?
         return recipe;
     }
 
@@ -157,18 +162,18 @@ public class RecipeService {
         return image;
     }
 
-    public List<Recipe> findAllRecipesSortedBySimilarityInCalories(Integer kcal, Integer maxCount) {
+    public List<Recipe> findAllRecipesSortedBySimilarityInCalories(Language language, Integer kcal, Integer maxCount) {
         Utils.validateVariableIsNonNegative(kcal, "kcal");
         Utils.validateVariableIsNonNegative(maxCount, "maxCount");
 
         var countAbove = maxCount / 2;
         var countBelow = maxCount - countAbove;
 
-        var recipePageBelow = recipeRepository.findAllByTotalKcalLessThanEqualOrderByTotalKcalDesc(
-                kcal.doubleValue(), PageRequest.of(0, countBelow)
+        var recipePageBelow = recipeRepository.findAllByLanguageAndTotalKcalLessThanEqualOrderByTotalKcalDesc(
+                language, kcal.doubleValue(), PageRequest.of(0, countBelow)
         );
-        var recipePageAbove = recipeRepository.findAllByTotalKcalGreaterThanOrderByTotalKcalAsc(
-                kcal.doubleValue(), PageRequest.of(0, countAbove)
+        var recipePageAbove = recipeRepository.findAllByLanguageAndTotalKcalGreaterThanOrderByTotalKcalAsc(
+                language, kcal.doubleValue(), PageRequest.of(0, countAbove)
         );
 
         var recipeList = new ArrayList<>(recipePageAbove.toList());
@@ -192,12 +197,29 @@ public class RecipeService {
         }*/
 
         validateIngredientsList(recipeCreationInput);
+        validateLanguage(recipeCreationInput);
+    }
 
+    private void validateLanguage(RecipeInput recipeInput) {
+        var recipeLanguage = recipeInput.getLanguage();
+        var message = "Non consistent language settings! Recipe language: %s but language for Product %s is %s";
+
+        recipeInput.getIngredients()
+                .forEach(ingredientInput -> {
+                    var productInput = ingredientInput.getProduct();
+
+                    if (!areEqual(recipeLanguage, productInput.getLanguage())) {
+                        throw new ValidationException(
+                                String.format(message, recipeLanguage, productInput.getName(), productInput.getLanguage())
+                        );
+                    }
+                });
     }
 
     private void validateRecipeUpdateInput(RecipeInput recipeUpdateInput) {
         validateRecipeSpecificFields(recipeUpdateInput);
         validateIngredientsList(recipeUpdateInput);
+        validateLanguage(recipeUpdateInput);
     }
 
     private void validateRecipeSpecificFields(RecipeInput recipeInput) {
@@ -207,7 +229,6 @@ public class RecipeService {
         Utils.validateFieldIsNonNegative(recipeInput.getTotalFats(), "TotalFats", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalProteins(), "TotalProteins", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalCarbohydrates(), "TotalCarbohydrates", recipeInput);
-
     }
 
     private void validateIngredientsList(RecipeInput creationInput) {
@@ -219,7 +240,7 @@ public class RecipeService {
         }
 
         for (var ingredient : ingredients) {
-            ingredientService.validateIngredientCreationInput(ingredient);
+            ingredientService.validateIngredientInput(ingredient);
         }
     }
 

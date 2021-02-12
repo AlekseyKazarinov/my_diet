@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.mydiet.mydiet.domain.entity.Language.areEqual;
 import static com.mydiet.mydiet.domain.entity.Status.*;
 
 @Slf4j
@@ -34,6 +35,7 @@ public class NutritionProgramService {
 
     private static final Integer DEFAULT_MAX_NUMBER = 5;
     private static final String DEFAULT_COLOR = "#FFFFFF";
+    private static final Language DEFAULT_LANGUAGE = Language.RUSSIAN;
 
     private final DailyDietService dailyDietService;
     private final NutritionProgramRepository nutritionProgramRepository;
@@ -59,6 +61,25 @@ public class NutritionProgramService {
         }
 
         validateLifestyles(programInput);
+        validateLanguage(programInput);
+    }
+
+    private void validateLanguage(NutritionProgramInput programInput) {
+        var programLanguage = programInput.getLanguage();
+        var message = "Non consistent language settings! Program language: %s but language for Recipe %s (id = %s) is %s";
+
+        programInput.getDailyDietIds().stream()
+                .map(dailyDietService::getDailyDietOrElseThrow)
+                .flatMap(dailyDiet -> dailyDiet.getMeals().stream())
+                .forEach(meal -> {
+                    var recipe = meal.getRecipe();
+
+                    if (!areEqual(programLanguage, recipe.getLanguage())) {
+                        throw new ValidationException(String.format(
+                                message, programLanguage, recipe.getName(), recipe.getId(), recipe.getLanguage()
+                        ));
+                    }
+                });
     }
 
     private void validateLifestyles(NutritionProgramInput programInput) {
@@ -103,6 +124,7 @@ public class NutritionProgramService {
                 .name(input.getName())
                 .description(input.getDescription())
                 .additionalInfo(input.getAdditionalInfo())
+                .language(Optional.ofNullable(input.getLanguage()).orElse(Language.RUSSIAN))
                 .lifestyles(lifestyles)
                 .dayColor(Optional.ofNullable(input.getDayColor()).orElse(DEFAULT_COLOR))
                 .mainColor(Optional.ofNullable(input.getMainColor()).orElse(DEFAULT_COLOR))
@@ -138,8 +160,17 @@ public class NutritionProgramService {
                 );
     }
 
-    public Long getTotalNumberOfPrograms() {
+    public Long getTotalNumberOfAllPrograms() {
         return nutritionProgramRepository.count();
+    }
+
+    public Long getTotalNumberOfProgramsWithLanguage(Language language) {
+        if (Language.isRussian(language)) {
+            return nutritionProgramRepository.countAllByLanguage(language)
+                    + nutritionProgramRepository.countAllByLanguage(null);
+        }
+
+        return nutritionProgramRepository.countAllByLanguage(language);
     }
 
     public NutritionProgram setStatusFor(NutritionProgram program, Status status) {
@@ -260,7 +291,9 @@ public class NutritionProgramService {
         return revertStatusFor(program);
     }
 
-    public List<NutritionProgram> getLimitedNumberProgramsByKcal(Status status, Integer kcal, Integer maxNumber) {
+    public List<NutritionProgram> getLimitedNumberProgramsByKcal(
+            Language language, Status status, Integer kcal, Integer maxNumber
+    ) {
         Utils.validateVariableIsNonNegative(kcal, "kcal");
 
         if (status == null) {
@@ -270,11 +303,11 @@ public class NutritionProgramService {
         var numberAbove = maxNumber / 2;
         var numberBelow = maxNumber - numberAbove;
 
-        var programPageBelow = nutritionProgramRepository.findAllByStatusAndKcalGreaterThanOrderByKcalAsc(
-                status, kcal, PageRequest.of(0, numberAbove)
+        var programPageBelow = nutritionProgramRepository.findAllByLanguageAndStatusAndKcalGreaterThanOrderByKcalAsc(
+                language, status, kcal, PageRequest.of(0, numberAbove)
         );
-        var programPageAbove = nutritionProgramRepository.findAllByStatusAndKcalLessThanEqualOrderByKcalDesc(
-                status, kcal, PageRequest.of(0, numberBelow)
+        var programPageAbove = nutritionProgramRepository.findAllByLanguageAndStatusAndKcalLessThanEqualOrderByKcalDesc(
+                language, status, kcal, PageRequest.of(0, numberBelow)
         );
 
         var programs = new ArrayList<>(programPageAbove.toList());
@@ -291,13 +324,14 @@ public class NutritionProgramService {
 
     // todo: whether we need these methods. We should analyze potential user cases.
 
-    public List<NutritionProgram> getPublishedPrograms(Integer kcal, Set<Lifestyle> lifestyles, ProductExclusion productExclusion) {
+    public List<NutritionProgram> getPublishedPrograms(Language language, Integer kcal, Set<Lifestyle> lifestyles, ProductExclusion productExclusion) {
         return getLimitedNumberOfProgramsByKcalAndStatusAndLifestylesAndExcludedProducts(
-                kcal, PUBLISHED, lifestyles, productExclusion, DEFAULT_MAX_NUMBER
+                language, kcal, PUBLISHED, lifestyles, productExclusion, DEFAULT_MAX_NUMBER
         );
     }
 
     public List<NutritionProgram> getProgramsBy(
+            Language language,
             Integer kcal,
             Integer deltaKcal,
             Status status,
@@ -307,6 +341,10 @@ public class NutritionProgramService {
     ) {
         if (status == null) {
             status = PUBLISHED;
+        }
+
+        if (language == null) {
+            language = Language.RUSSIAN;
         }
 
         if (maxNumber == null || maxNumber.equals(0)) {
@@ -326,16 +364,16 @@ public class NutritionProgramService {
         }
 
         if (lifestyles == null && productExclusion == null) {
-            return getLimitedNumberProgramsByKcal(status, kcal, maxNumber);
+            return getLimitedNumberProgramsByKcal(language, status, kcal, maxNumber);
         }
 
         if (lifestyles != null && productExclusion == null) {
-            return getLimitedNumberOfProgramsByKcalAndStatusAndLifestyles(kcal, status, lifestyles, maxNumber);
+            return getLimitedNumberOfProgramsByKcalAndStatusAndLifestyles(language, kcal, status, lifestyles, maxNumber);
         }
 
         if (lifestyles != null) {
             return getLimitedNumberOfProgramsByKcalAndStatusAndLifestylesAndExcludedProducts(
-                    kcal, status, lifestyles, productExclusion, maxNumber
+                    language, kcal, status, lifestyles, productExclusion, maxNumber
             );
         }
 
@@ -359,6 +397,7 @@ public class NutritionProgramService {
     }
 
     private List<NutritionProgram> getLimitedNumberOfProgramsByKcalAndStatusAndLifestyles(
+            Language language,
             Integer kcal,
             Status status,
             Set<Lifestyle> lifestyles,
@@ -370,11 +409,15 @@ public class NutritionProgramService {
             throw new IllegalArgumentException("Status can not be null");
         }
 
+        if (language == null) {
+            throw new IllegalArgumentException("Language can not be null");
+        }
+
         if (lifestyles == null || lifestyles.isEmpty()) {
             throw new IllegalArgumentException("Lifestyle can not be null or empty");
         }
 
-        var pairOfProgramsPages = getProgramsPagesBy(kcal, status, lifestyles, maxNumber);
+        var pairOfProgramsPages = getProgramsPagesBy(language, kcal, status, lifestyles, maxNumber);
 
         return Stream.concat(pairOfProgramsPages.getFirst().stream(), pairOfProgramsPages.getSecond().stream())
                 .sorted(getDefaultComparatorForSortingByKcal(kcal))
@@ -382,6 +425,7 @@ public class NutritionProgramService {
     }
 
     private Pair<Page<NutritionProgram>, Page<NutritionProgram>> getProgramsPagesBy(
+            Language language,
             Integer kcal,
             Status status,
             Set<Lifestyle> lifestyles,
@@ -391,7 +435,8 @@ public class NutritionProgramService {
         var numberBelow = maxNumber - numberAbove;
 
         var programsPageAbove = nutritionProgramRepository
-                .findAllByStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(
+                .findAllByLanguageAndStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(
+                        language,
                         status,
                         lifestyles,
                         kcal,
@@ -399,7 +444,8 @@ public class NutritionProgramService {
                 );
 
         var programsPageBelow = nutritionProgramRepository
-                .findAllByStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(
+                .findAllByLanguageAndStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(
+                        language,
                         status,
                         lifestyles,
                         kcal,
@@ -409,6 +455,7 @@ public class NutritionProgramService {
     }
 
     private List<NutritionProgram> getLimitedNumberOfProgramsByKcalAndStatusAndLifestylesAndExcludedProducts(
+            Language language,
             Integer kcal,
             Status status,
             Set<Lifestyle> lifestyles,
@@ -419,8 +466,8 @@ public class NutritionProgramService {
             throw new BadRequestException("Product exclusion is only available for query with status ACCEPTED or PUBLISHED");
         }
 
-        var highPrograms = nutritionProgramRepository.findAllByStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(status, lifestyles, kcal);
-        var lowPrograms = nutritionProgramRepository.findAllByStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(status, lifestyles, kcal);
+        var highPrograms = nutritionProgramRepository.findAllByLanguageAndStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(language, status, lifestyles, kcal);
+        var lowPrograms = nutritionProgramRepository.findAllByLanguageAndStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(language, status, lifestyles, kcal);
 
         var numberAbove = maxNumber / 2;
         var numberBelow = maxNumber - numberAbove;

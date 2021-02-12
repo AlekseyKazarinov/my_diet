@@ -63,7 +63,6 @@ public class MealController {
     @ApiResponses(value = {@ApiResponse(code = 200, message = "All Meals are received", response = Meal[].class),
             @ApiResponse(code = 204, message = "There are no existing Meals", response = Void.class)})
     public ResponseEntity<List<Meal>> getAllExistingMeals() {
-
         var listOfMeals = mealService.findAllMeals();
 
         if (listOfMeals.isEmpty()) {
@@ -81,7 +80,6 @@ public class MealController {
             @ApiResponse(code = 204, message = "There are no Meals for that FoodTime")
     })
     public ResponseEntity<List<Meal>> getAllMealsByFoodTime(@PathVariable String foodTime) {
-
         var listOfMeals = mealService.getMealsByFoodTime(foodTime);
 
         if (listOfMeals.isEmpty()) {

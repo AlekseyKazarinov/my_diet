@@ -3,6 +3,7 @@ package com.mydiet.mydiet.controller;
 import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.domain.entity.Status;
@@ -54,8 +55,10 @@ public class NutritionProgramController {
     @GetMapping(path = "/count")
     @ApiOperation(value = "Get total number of programs")
     @ApiResponse(code = 200, message = "Total number calculated", response = NutritionProgram.class)
-    public ResponseEntity<Long> countPrograms() {
-        var numberOfPrograms = nutritionProgramService.getTotalNumberOfPrograms();
+    public ResponseEntity<Long> countPrograms(@RequestParam(required = false) Language language) {
+        var numberOfPrograms = language == null ?
+                nutritionProgramService.getTotalNumberOfAllPrograms() :
+                nutritionProgramService.getTotalNumberOfProgramsWithLanguage(language);
         return ResponseEntity.ok(numberOfPrograms);
     }
 
@@ -66,14 +69,16 @@ public class NutritionProgramController {
      */
     @GetMapping("/")
     public ResponseEntity<List<NutritionProgram>> getNutritionPrograms(
-             @RequestParam(required = false) Integer kcal,
-             @RequestParam(required = false) Integer delta,
-             @RequestParam(required = false) Status status,
-             @RequestParam(required = false) Set<Lifestyle> lifestyles,
-             @RequestParam(required = false) Integer maxNumber,
-             @RequestBody(required = false) ProductExclusion productExclusion
+            @RequestParam(defaultValue = "RUSSIAN") Language language,
+            @RequestParam(required = false) Integer kcal,
+            @RequestParam(required = false) Integer delta,
+            @RequestParam(required = false) Status status,
+            @RequestParam(required = false) Set<Lifestyle> lifestyles,
+            @RequestParam(required = false) Integer maxNumber,
+            @RequestBody(required = false) ProductExclusion productExclusion
     ) {
-        var programs = nutritionProgramService.getProgramsBy(kcal, delta, status, lifestyles, productExclusion, maxNumber);
+        var programs = nutritionProgramService.getProgramsBy(
+                language, kcal, delta, status, lifestyles, productExclusion, maxNumber);
         return ResponseEntity.ok(programs);
     }
 

@@ -1,6 +1,7 @@
 package com.mydiet.mydiet.domain.dto.input;
 
 import com.mydiet.mydiet.domain.dto.input.DailyDietInput;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,8 @@ public class NutritionProgramInput {
     private String shortDescription;
     private String description;
     private String additionalInfo;
+
+    private Language language;
 
     private Set<Lifestyle> lifestyles;
 

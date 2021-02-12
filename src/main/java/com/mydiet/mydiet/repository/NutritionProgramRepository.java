@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.repository;
 
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.domain.entity.Status;
@@ -19,22 +20,30 @@ public interface NutritionProgramRepository extends JpaRepository<NutritionProgr
     public Optional<NutritionProgram> findProgramByNameAndStatus(String name, Status status);
 
     public List<NutritionProgram> findAllByStatusAndKcalIsBetween(Status status, Integer minKcal, Integer maxKcal);
-    public Page<NutritionProgram> findAllByStatusAndKcalGreaterThanOrderByKcalAsc(Status status, Integer kcal, Pageable pageRequest);
-    public Page<NutritionProgram> findAllByStatusAndKcalLessThanEqualOrderByKcalDesc(Status status, Integer kcal, Pageable pageRequest);
+    public Page<NutritionProgram> findAllByLanguageAndStatusAndKcalGreaterThanOrderByKcalAsc(Language language, Status status, Integer kcal, Pageable pageRequest);
+    public Page<NutritionProgram> findAllByLanguageAndStatusAndKcalLessThanEqualOrderByKcalDesc(Language language, Status status, Integer kcal, Pageable pageRequest);
 
     public List<NutritionProgram> findByLifestyles(Set<Lifestyle> lifestyles);
     public Page<NutritionProgram> findAllByStatusAndLifestyles(Status status, Set<Lifestyle> lifestyles, Pageable pageable);
-    public Page<NutritionProgram> findAllByStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(Status status, Set<Lifestyle> lifestyles, Integer kcal, Pageable pageable);
-    public Page<NutritionProgram> findAllByStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(Status status, Set<Lifestyle> lifestyles, Integer kcal, Pageable pageable);
+    public Page<NutritionProgram> findAllByLanguageAndStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(
+            Language language, Status status, Set<Lifestyle> lifestyles, Integer kcal, Pageable pageable
+    );
+    public Page<NutritionProgram> findAllByLanguageAndStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(
+            Language language, Status status, Set<Lifestyle> lifestyles, Integer kcal, Pageable pageable
+    );
 
-    public Stream<NutritionProgram> findAllByStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(Status status, Set<Lifestyle> lifestyles, Integer kcal);
-    public Stream<NutritionProgram> findAllByStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(Status status, Set<Lifestyle> lifestyles, Integer kcal);
+    public Stream<NutritionProgram> findAllByLanguageAndStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(
+            Language language, Status status, Set<Lifestyle> lifestyles, Integer kcal
+    );
+    public Stream<NutritionProgram> findAllByLanguageAndStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(
+            Language language, Status status, Set<Lifestyle> lifestyles, Integer kcal
+    );
 
     public List<NutritionProgram> findAllByStatus(Status status);
     public List<NutritionProgram> findAllByStatusAndLifestyles(Status status, Set<Lifestyle> lifestyles);
 
     public Page<NutritionProgram> findAllByStatusAndLifestylesAndKcal(Status status, Set<Lifestyle> lifestyles, Integer kcal);
 
-
+    public Long countAllByLanguage(Language language);
 
 }

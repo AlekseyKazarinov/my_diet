@@ -3,6 +3,7 @@ package com.mydiet.mydiet.controller;
 import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.input.RecipeInput;
 import com.mydiet.mydiet.domain.entity.Image;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.service.RecipeService;
 import io.swagger.annotations.Api;
@@ -32,7 +33,6 @@ public class RecipeController {
     public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeInput recipeCreationInput) {
         var recipe = recipeService.createValidatedRecipe(recipeCreationInput);
         return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
-
     }
 
     @ApiOperation(value = "Get a Recipe")
@@ -50,7 +50,11 @@ public class RecipeController {
         }
     }
 
-    @ApiOperation(value = "Get All Recipes")
+    /**
+     * This is very resource intensive endpoint
+     * @return all recipes stored in the database
+     */
+    @ApiOperation(value = "Get All Recipes (Use this judiciously")
     @ApiResponses(value = @ApiResponse(code = 200, message = "All Recipes received", response = Recipe[].class))
     @GetMapping(path = "/all")
     public ResponseEntity<List<Recipe>> getAllRecipes() {
@@ -67,8 +71,12 @@ public class RecipeController {
     @ApiOperation(value = "Get Recipes sorted by similarity in calories")
     @ApiResponses(value = @ApiResponse(code = 200, message = "All Sorted Recipes received", response = Recipe[].class))
     @GetMapping(path = "/sorted-by-calories")
-    public ResponseEntity<List<Recipe>> getAllSortedRecipes(@RequestParam Integer kkal, @RequestParam Integer maxCount) {
-        var recipeList = recipeService.findAllRecipesSortedBySimilarityInCalories(kkal, maxCount);
+    public ResponseEntity<List<Recipe>> getAllSortedRecipes(
+            @RequestParam(defaultValue = "RUSSIAN") Language language,
+            @RequestParam Integer kcal,
+            @RequestParam Integer maxNumber
+    ) {
+        var recipeList = recipeService.findAllRecipesSortedBySimilarityInCalories(language, kcal, maxNumber);
 
         if (!recipeList.isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(recipeList);

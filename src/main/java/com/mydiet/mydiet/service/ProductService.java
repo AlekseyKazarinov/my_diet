@@ -2,6 +2,7 @@ package com.mydiet.mydiet.service;
 
 import com.google.common.base.Preconditions;
 import com.mydiet.mydiet.domain.dto.input.ProductInput;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.ProductType;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
@@ -11,6 +12,9 @@ import com.mydiet.mydiet.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -22,6 +26,7 @@ public class ProductService {
     public Product createProduct(ProductInput productCreationInput) {
         var product = Product.builder()
                 .name(productCreationInput.getName())
+                .language(Optional.ofNullable(productCreationInput.getLanguage()).orElse(Language.RUSSIAN))
                 .productType(ProductType.of(productCreationInput.getProductType()))
                 .consistence(Consistence.of(productCreationInput.getConsistence()))
                 .build();
@@ -57,8 +62,10 @@ public class ProductService {
 
     public Product updateProduct(Long productId, ProductInput productUpdateInput) {
         var product = getProductOrThrow(productId);
+
         product.setName(productUpdateInput.getName());
         product.setProductType(ProductType.of(productUpdateInput.getProductType()));
+        product.setLanguage(Optional.ofNullable(productUpdateInput.getLanguage()).orElse(Language.RUSSIAN));
 
         return saveProduct(product);
     }

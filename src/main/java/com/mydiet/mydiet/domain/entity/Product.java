@@ -19,7 +19,7 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = "ingredients")
+@ToString(exclude = "relatedIngredients")
 public class Product {
 
     @Id
@@ -29,15 +29,16 @@ public class Product {
 
     @Column(unique = true)
     private String name;
+    private Language language;
 
     @JsonIgnore
-    private Double kkalPer100g;
+    private Double kcalPer100g;  // todo: remove it?
     @JsonIgnore
-    private Double proteins;
+    private Double proteins;  // todo: remove it?
     @JsonIgnore
-    private Double fats;
+    private Double fats;  // todo: remove it?
     @JsonIgnore
-    private Double carbohydrates;
+    private Double carbohydrates;  // todo: remove it?
 
     private ProductType productType;
 

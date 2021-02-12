@@ -22,7 +22,7 @@ public class IngredientService {
     private final IngredientRepository ingredientRepository;
     private final DomainEventPublisher domainEventPublisher;
 
-    public void validateIngredientCreationInput(IngredientInput ingredient) {
+    public void validateIngredientInput(IngredientInput ingredient) {
         Preconditions.checkNotNull(ingredient, "Ingredient is null");
 
         Utils.validateFieldIsNonNegative(ingredient.getTotalQuantity(), "TotalQuantity", ingredient);
@@ -76,13 +76,13 @@ public class IngredientService {
     }
 
     public Ingredient updateValidatedIngredient(Long ingredientId, IngredientInput ingredientUpdateInput) {
-        validateIngredientCreationInput(ingredientUpdateInput);
+        validateIngredientInput(ingredientUpdateInput);
         return updateIngredient(ingredientId, ingredientUpdateInput);
     }
 
 
     public Ingredient createValidatedIngredient(IngredientInput ingredientCreationInput) {
-        validateIngredientCreationInput(ingredientCreationInput);
+        validateIngredientInput(ingredientCreationInput);
         return createIngredient(ingredientCreationInput);
     }
 

@@ -25,7 +25,7 @@ public class DailyDiet {
     @JsonProperty(access = READ_ONLY)
     private Long id;
 
-    private String name;
+    private String name; // optional technical field
 
     @ManyToMany//(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
