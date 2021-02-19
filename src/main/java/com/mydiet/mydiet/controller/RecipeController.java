@@ -2,6 +2,7 @@ package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.input.RecipeInput;
+import com.mydiet.mydiet.domain.dto.input.RecipeTranslationInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Recipe;
@@ -27,11 +28,27 @@ public class RecipeController {
     private final RecipeService recipeService;
 
     @ApiOperation(value = "Create a new Recipe")
-    @ApiResponses(value = {@ApiResponse(code = 201, message = "Recipe created", response = Recipe.class),
-                           @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)})
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Recipe created", response = Recipe.class),
+            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+    })
     @PostMapping
     public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeInput recipeCreationInput) {
         var recipe = recipeService.createValidatedRecipe(recipeCreationInput);
+        return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
+    }
+
+    @ApiOperation(value = "Translate an existing Recipe")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Recipe translated", response = Recipe.class),
+            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+    })
+    @PostMapping("{recipeId}/translate")
+    public ResponseEntity<Recipe> translateRecipe(
+            @PathVariable Long recipeId,
+            @RequestBody @NonNull RecipeTranslationInput recipeTranslationInput
+    ) {
+        var recipe = recipeService.translateValidatedRecipe(recipeId, recipeTranslationInput);
         return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
     }
 
@@ -54,7 +71,7 @@ public class RecipeController {
      * This is very resource intensive endpoint
      * @return all recipes stored in the database
      */
-    @ApiOperation(value = "Get All Recipes (Use this judiciously")
+    @ApiOperation(value = "Get All Recipes (Use this endpoint judiciously")
     @ApiResponses(value = @ApiResponse(code = 200, message = "All Recipes received", response = Recipe[].class))
     @GetMapping(path = "/all")
     public ResponseEntity<List<Recipe>> getAllRecipes() {

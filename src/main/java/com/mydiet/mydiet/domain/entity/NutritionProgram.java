@@ -1,6 +1,5 @@
 package com.mydiet.mydiet.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -37,6 +36,8 @@ public class NutritionProgram {
     @JsonProperty(access = READ_ONLY)
     private Status status;
 
+    //@Index(...)
+    private String   langId;     // grouping by the same context  todo: use
     private Language language;
 
     private String name;             // preview

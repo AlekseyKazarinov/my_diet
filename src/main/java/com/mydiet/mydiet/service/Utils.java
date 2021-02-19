@@ -15,8 +15,8 @@ public class Utils {
     private static final String TEXT_FIELD_NON_NULL = "Field %s should be set";
     private static final String VALUE_NON_NULL = "Value %s should be set";
 
-    public static void validateStringFieldIsSet(String field, String fieldName, Object entity) {
-        if (StringUtils.isEmpty(field)) {
+    public static void validateStringFieldIsSet(String fieldValue, String fieldName, Object entity) {
+        if (StringUtils.isEmpty(fieldValue)) {
             var message = String.format(FIELD_NON_NULL, fieldName, name(entity));
             throw new ValidationException(message);
         }

@@ -124,6 +124,7 @@ public class NutritionProgramService {
                 .name(input.getName())
                 .description(input.getDescription())
                 .additionalInfo(input.getAdditionalInfo())
+                .langId(UUID.randomUUID().toString())
                 .language(Optional.ofNullable(input.getLanguage()).orElse(Language.RUSSIAN))
                 .lifestyles(lifestyles)
                 .dayColor(Optional.ofNullable(input.getDayColor()).orElse(DEFAULT_COLOR))

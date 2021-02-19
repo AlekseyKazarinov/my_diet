@@ -1,6 +1,7 @@
 package com.mydiet.mydiet.service;
 
 import com.mydiet.mydiet.domain.dto.input.RecipeInput;
+import com.mydiet.mydiet.domain.dto.input.RecipeTranslationInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.Language;
@@ -16,12 +17,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.mydiet.mydiet.domain.entity.Language.RUSSIAN;
 import static com.mydiet.mydiet.domain.entity.Language.areEqual;
 
 @Slf4j
@@ -51,6 +50,7 @@ public class RecipeService {
         var recipe = Recipe.builder()
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
+                .langId(UUID.randomUUID().toString())
                 .language(Optional.ofNullable(recipeCreationInput.getLanguage()).orElse(Language.RUSSIAN))
                 .foodCategory(recipeCreationInput.getFoodCategory())
                 .ingredients(ingredients)
@@ -61,6 +61,37 @@ public class RecipeService {
                 .build();
 
         return saveIfOriginal(recipe);
+    }
+
+    public Recipe translateValidatedRecipe(Long recipeId, RecipeTranslationInput recipeTranslationInput) {
+        Utils.validateStringFieldIsSet(recipeTranslationInput.getName(), "name", recipeTranslationInput);
+        Utils.validateStringFieldIsSet(recipeTranslationInput.getDescription(), "description", recipeTranslationInput);
+
+        var recipe = getRecipeOrElseThrow(recipeId);
+
+        if (Language.areEqual(recipe.getLanguage(), recipeTranslationInput.getLanguage())) {
+            throw new ValidationException("Recipe can not be translated into the same language");
+        }
+
+        var optionalAlreadyTranslatedRecipe = recipeRepository.findRecipeByLangIdAndLanguage(
+                recipe.getLangId(), recipe.getLanguage()
+        );
+
+        if (optionalAlreadyTranslatedRecipe.isPresent()) {
+            throw new ValidationException(
+                    String.format("Translation into %s for Recipe with Id #%s is Recipe #%s",
+                            Language.isRussian(recipeTranslationInput.getLanguage()) ? RUSSIAN : recipeTranslationInput.getLanguage(),
+                            recipe.getId(),
+                            optionalAlreadyTranslatedRecipe.get().getId()
+            ));
+        }
+
+        recipe.setId(null);
+        recipe.setLanguage(recipeTranslationInput.getLanguage());
+        recipe.setName(recipeTranslationInput.getName());
+        recipe.setDescription(recipeTranslationInput.getDescription());
+
+        return recipeRepository.save(recipe);
     }
 
     private Recipe saveIfOriginal(Recipe recipe) {

@@ -30,6 +30,9 @@ public class Recipe {
 
     @Column(unique = true)
     private String   name;
+
+    //@Index(...)
+    private String   langId;     // grouping by the same context
     private Language language;
 
     @ManyToOne

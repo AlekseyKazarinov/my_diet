@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -26,6 +27,7 @@ public class ProductService {
     public Product createProduct(ProductInput productCreationInput) {
         var product = Product.builder()
                 .name(productCreationInput.getName())
+                .langId(UUID.randomUUID().toString())
                 .language(Optional.ofNullable(productCreationInput.getLanguage()).orElse(Language.RUSSIAN))
                 .productType(ProductType.of(productCreationInput.getProductType()))
                 .consistence(Consistence.of(productCreationInput.getConsistence()))
@@ -58,6 +60,13 @@ public class ProductService {
                 .orElseThrow(
                         () -> new NotFoundException(String.format("Product with id: %s does not exist", productId))
                 );
+    }
+
+    public Product updateProductName(Long productId, String newProductName) {
+        Utils.validateTextVariableIsSet(newProductName, "product name");
+        var product = getProductOrThrow(productId);
+        product.setName(newProductName);
+        return saveProduct(product);
     }
 
     public Product updateProduct(Long productId, ProductInput productUpdateInput) {
