@@ -1,13 +1,11 @@
 package com.mydiet.mydiet.controller;
 
+import com.mydiet.mydiet.config.SwaggerConfig;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.domain.entity.Status;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import com.mydiet.mydiet.service.NutritionProgramService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +19,14 @@ import static com.mydiet.mydiet.domain.entity.Status.PUBLISHED;
 @RestController
 @RequestMapping("/app")
 @RequiredArgsConstructor
-@Api(tags = "Android application functionality")
+@Api(tags = SwaggerConfig.APP_CONTROLLER_TAG)
 public class AppController {
 
     private final NutritionProgramRepository nutritionProgramRepository;
 
     // todo: use app-specific format
     @GetMapping(path = "/nutrition-programs/{programNumber}")
-    @ApiOperation(value = "Get a Nutrition Program in application-compatible format")
+    @ApiOperation(value = "Get a Nutrition Program")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgram.class),
             @ApiResponse(code = 204, message = "Nutrition Program does not exist")
@@ -41,7 +39,7 @@ public class AppController {
     }
 
     @GetMapping(path = "/nutrition-programs/{programName}")
-    @ApiOperation(value = "Get a Nutrition Program in application-compatible format")
+    @ApiOperation(value = "Get a Nutrition Program")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgram.class),
             @ApiResponse(code = 204, message = "Nutrition Program does not exist")

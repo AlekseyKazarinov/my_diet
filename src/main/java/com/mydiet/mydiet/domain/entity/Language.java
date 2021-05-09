@@ -22,4 +22,8 @@ public enum Language {
         return leftLanguage == rightLanguage;
     }
 
+    public static String print(Language language) {
+        return isRussian(language) ? RUSSIAN.toString() : language.toString();
+    }
+
 }

@@ -7,6 +7,7 @@ import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import com.mydiet.mydiet.repository.ShoppingListRepository;
 import com.mydiet.mydiet.service.NutritionProgramService;
+import com.mydiet.mydiet.service.NutritionProgramStorageService;
 import com.mydiet.mydiet.service.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +25,10 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class ShoppingListService {
 
-    private final NutritionProgramService programService;
     private final UnitGraphService unitGraphService;
     private final ShoppingListRepository shoppingListRepository;
     private final NutritionProgramRepository nutritionProgramRepository;
+    private final NutritionProgramStorageService programStorageService;
 
     public Optional<ShoppingList> getShoppingListFor(Long programNumber) {
         return shoppingListRepository.findById(programNumber);
@@ -42,7 +43,7 @@ public class ShoppingListService {
 
     //todo: rewrite this code. Do not recalculate every time
     public WeekList getShoppingListForWeekNo(Integer weekNumber, Long programNumber) {
-        var nutritionProgram = programService.getProgramOrElseThrow(programNumber);
+        var nutritionProgram = programStorageService.getProgramOrElseThrow(programNumber);
         return generateListOfProductsForWeekNo(weekNumber, nutritionProgram);
     }
 
@@ -91,7 +92,7 @@ public class ShoppingListService {
      */
    public ShoppingList generateShoppingListFor(NutritionProgram nutritionProgram) {
        shoppingListRepository.deleteById(nutritionProgram.getNumber());
-       var numberOfWeeks = programService.getNumberOfWeeksFor(nutritionProgram);
+       var numberOfWeeks = nutritionProgram.getNumberOfWeeks();
 
        var shoppingList = new ShoppingList();
        shoppingList.setNutritionProgramNumber(nutritionProgram.getNumber());
@@ -111,16 +112,16 @@ public class ShoppingListService {
        log.info("generate list of products for week number: {}, Nutrition Program: #{}",
                weekNumber, nutritionProgram.getNumber());
 
-       var dailyDiets = programService.getDailyDietsForWeekNo(weekNumber, nutritionProgram);
+       var dailyDiets = nutritionProgram.getDailyDietsForWeekNo(weekNumber);
        var listsByProductType = getProductListsByProductTypeFrom(dailyDiets);
 
        var weekList = new WeekList();
-       weekList.setListsByProductType(listsByProductType);
+       weekList.setProductListsByType(listsByProductType);
        weekList.setNumberOfWeek(weekNumber);
        return weekList;
    }
 
-   private Map<ProductType, List<ProductRow>> getProductListsByProductTypeFrom(List<DailyDiet> dailyDiets) {
+   private Map<ProductType, ProductRowsForType> getProductListsByProductTypeFrom(List<DailyDiet> dailyDiets) {
        var quantityMap = getQuantityListsByProductMapFrom(dailyDiets);
        return convertToProductListsByProductType(quantityMap);
    }
@@ -143,30 +144,34 @@ public class ShoppingListService {
               ));
    }
 
-   private Map<ProductType, List<ProductRow>> convertToProductListsByProductType(
+   private Map<ProductType, ProductRowsForType> convertToProductListsByProductType(
            Map<Product, List<Quantity>> quantityMap
    ) {
        log.info("convert Quantities for each Product to Product Row for Shopping List: {}", quantityMap);
 
-       var productRowList = new ArrayList<ProductRow>();
+       var productRowsForTypeMap = new HashMap<ProductType, ProductRowsForType>();
 
        for (var product : quantityMap.keySet()) {
            var quantity = unitGraphService.sum(product, quantityMap.get(product));
-           productRowList.add(
-                   ProductRow.of(
-                           product.getProductType(),
-                           product.getName(),
-                           quantity.getTotalQuantity(),
-                           quantity.getUnit())
-           );
+
+           var value = productRowsForTypeMap.get(product.getProductType());
+
+           if (value == null) {
+               value = new ProductRowsForType();
+           }
+
+           value.getProductRows().add(
+                   ProductRow.builder()
+                       .productType(product.getProductType())
+                       .productName(product.getName())
+                       .totalQuantity(quantity.getTotalQuantity())
+                       .unit(quantity.getUnit())
+                   .build());
+
+           productRowsForTypeMap.put(product.getProductType(), value);
        }
 
-       return productRowList.stream().collect(
-               Collectors.groupingBy(
-                       ProductRow::getProductType,
-                       LinkedHashMap::new,
-                       Collectors.toList()
-               ));
+       return productRowsForTypeMap;
    }
 
 }

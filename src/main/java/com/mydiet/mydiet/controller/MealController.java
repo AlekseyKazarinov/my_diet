@@ -4,10 +4,7 @@ import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.input.MealInput;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.service.MealService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Api(tags = "Meals")
 public class MealController {
+
 
     private final MealService mealService;
 
@@ -60,8 +58,10 @@ public class MealController {
 
     @GetMapping
     @ApiOperation(value = "Get all existing Meals")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "All Meals are received", response = Meal[].class),
-            @ApiResponse(code = 204, message = "There are no existing Meals", response = Void.class)})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "All Meals are received", response = Meal[].class),
+            @ApiResponse(code = 204, message = "There are no existing Meals", response = Object.class)
+    })
     public ResponseEntity<List<Meal>> getAllExistingMeals() {
         var listOfMeals = mealService.findAllMeals();
 
@@ -77,7 +77,7 @@ public class MealController {
     @ApiOperation(value = "Get all Meals by FoodTime")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "All Meals for this FoodTime are received",response = Meal[].class),
-            @ApiResponse(code = 204, message = "There are no Meals for that FoodTime")
+            @ApiResponse(code = 204, message = "There are no Meals for that FoodTime", response = Object.class)
     })
     public ResponseEntity<List<Meal>> getAllMealsByFoodTime(@PathVariable String foodTime) {
         var listOfMeals = mealService.getMealsByFoodTime(foodTime);

@@ -3,6 +3,7 @@ package com.mydiet.mydiet.controller;
 import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
+import com.mydiet.mydiet.domain.dto.input.ProgramTranslationInput;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
@@ -39,11 +40,28 @@ public class NutritionProgramController {
         return ResponseEntity.status(HttpStatus.CREATED).body(program);
     }
 
+    @PostMapping("/{programNumber}/translate")
+    @ApiOperation(value = "Translate existing Nutrition Program")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Nutrition Program translated", response = NutritionProgram.class),
+            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+    })
+    public ResponseEntity<NutritionProgram> translateNutritionProgram(
+            @PathVariable Long programNumber,
+            @RequestBody ProgramTranslationInput programTranslationInput
+    ) {
+        var program = nutritionProgramService.translateValidatedNutritionProgram(
+                programNumber, programTranslationInput
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(program);
+    }
+
     @GetMapping(path = "/{programNumber}")
     @ApiOperation(value = "Get a Nutrition Program")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgram.class),
-            @ApiResponse(code = 204, message = "Nutrition Program does not exist")
+            @ApiResponse(code = 204, message = "Nutrition Program does not exist", response = Object.class)
     })
     public ResponseEntity<NutritionProgram> getNutritionProgram(@PathVariable Long programNumber) {
         var optionalProgram = nutritionProgramService.findNutritionProgram(programNumber);

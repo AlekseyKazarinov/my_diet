@@ -54,7 +54,7 @@ public class RecipeController {
 
     @ApiOperation(value = "Get a Recipe")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Recipe received", response = Recipe.class),
-                           @ApiResponse(code = 204, message = "There is no Recipe with that id")})
+                           @ApiResponse(code = 204, message = "There is no Recipe with that id", response = Object.class)})
     @GetMapping(path = "/{recipeId}")
     public ResponseEntity<Recipe> getRecipe(@PathVariable @NonNull Long recipeId) {
         var optionalRecipe = recipeService.findRecipeById(recipeId);

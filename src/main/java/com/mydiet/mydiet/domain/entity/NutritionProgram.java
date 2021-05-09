@@ -3,9 +3,11 @@ package com.mydiet.mydiet.domain.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -61,5 +63,36 @@ public class NutritionProgram {
     private List<DailyDiet> dailyDiets;  // as a user I want to ..?
 
     private Short dailyNumberOfMeals;
+
+
+    public Integer getNumberOfWeeks() {
+        if (this.getDailyDiets() == null) {
+            return null;
+        }
+
+        var numberOfDays = this.getDailyDiets().size();
+        var fullWeeks = numberOfDays / 7;
+        var remainder = numberOfDays % 7;
+
+        if (remainder == 0) {
+            return fullWeeks;
+        } else {
+            return ++fullWeeks;
+        }
+    }
+
+    public List<DailyDiet> getDailyDietsForWeekNo(Integer weekNumber) {
+        Assert.notNull(weekNumber, "weekNumber must not be null");
+
+        if (weekNumber > this.getNumberOfWeeks()) {
+            return Collections.emptyList();
+        }
+
+        var dailyDiets = this.getDailyDiets();
+        var firstDay = 7 * (weekNumber - 1);
+        var lastDay = Math.min( 7 * weekNumber, dailyDiets.size());
+
+        return dailyDiets.subList(firstDay, lastDay);
+    }
 
 }

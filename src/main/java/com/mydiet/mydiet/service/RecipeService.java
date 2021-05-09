@@ -64,8 +64,8 @@ public class RecipeService {
     }
 
     public Recipe translateValidatedRecipe(Long recipeId, RecipeTranslationInput recipeTranslationInput) {
-        Utils.validateStringFieldIsSet(recipeTranslationInput.getName(), "name", recipeTranslationInput);
-        Utils.validateStringFieldIsSet(recipeTranslationInput.getDescription(), "description", recipeTranslationInput);
+        Utils.validateTextFieldIsSet(recipeTranslationInput.getName(), "name", recipeTranslationInput);
+        Utils.validateTextFieldIsSet(recipeTranslationInput.getDescription(), "description", recipeTranslationInput);
 
         var recipe = getRecipeOrElseThrow(recipeId);
 
@@ -73,8 +73,8 @@ public class RecipeService {
             throw new ValidationException("Recipe can not be translated into the same language");
         }
 
-        var optionalAlreadyTranslatedRecipe = recipeRepository.findRecipeByLangIdAndLanguage(
-                recipe.getLangId(), recipe.getLanguage()
+        var optionalAlreadyTranslatedRecipe = findRecipeTranslationInto(
+                recipeTranslationInput.getLanguage(), recipe
         );
 
         if (optionalAlreadyTranslatedRecipe.isPresent()) {
@@ -88,10 +88,17 @@ public class RecipeService {
 
         recipe.setId(null);
         recipe.setLanguage(recipeTranslationInput.getLanguage());
+
         recipe.setName(recipeTranslationInput.getName());
         recipe.setDescription(recipeTranslationInput.getDescription());
 
         return recipeRepository.save(recipe);
+    }
+
+    public Optional<Recipe> findRecipeTranslationInto(Language language, Recipe recipe) {
+        return recipeRepository.findRecipeByLangIdAndLanguage(
+                recipe.getLangId(), language
+        );
     }
 
     private Recipe saveIfOriginal(Recipe recipe) {
@@ -254,8 +261,8 @@ public class RecipeService {
     }
 
     private void validateRecipeSpecificFields(RecipeInput recipeInput) {
-        Utils.validateStringFieldIsSet(recipeInput.getName(), "Name", recipeInput);
-        Utils.validateStringFieldIsSet(recipeInput.getDescription(), "Description", recipeInput);
+        Utils.validateTextFieldIsSet(recipeInput.getName(), "Name", recipeInput);
+        Utils.validateTextFieldIsSet(recipeInput.getDescription(), "Description", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalKcal(), "TotalKcal", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalFats(), "TotalFats", recipeInput);
         Utils.validateFieldIsNonNegative(recipeInput.getTotalProteins(), "TotalProteins", recipeInput);

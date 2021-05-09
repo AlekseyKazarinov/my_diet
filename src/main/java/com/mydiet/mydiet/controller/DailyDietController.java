@@ -34,7 +34,7 @@ public class DailyDietController {
     @GetMapping("/{dailyDietId}")
     @ApiOperation(value = "Get Daily Diet")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Daily Diet received", response = DailyDiet.class),
-                           @ApiResponse(code = 204, message = "Daily Diet does not exist")})
+                           @ApiResponse(code = 204, message = "Daily Diet does not exist", response = Object.class)})
     public ResponseEntity<DailyDiet> getDailyDiet(@PathVariable @NonNull Long dailyDietId) {
         var optionalDailyDiet = dailyDietService.findDailyDietById(dailyDietId);
         if (optionalDailyDiet.isPresent()) {
@@ -56,7 +56,7 @@ public class DailyDietController {
 
     @DeleteMapping("/{dailyDietId}")
     @ApiOperation(value = "Delete Daily Diet")
-    @ApiResponses(value = @ApiResponse(code = 204, message = "Daily Diet deleted"))
+    @ApiResponses(value = @ApiResponse(code = 204, message = "Daily Diet deleted", response = Object.class))
     public ResponseEntity<DailyDiet> updateDailyDietName(@PathVariable @NonNull Long dailyDietId) {
         dailyDietService.deleteDailyDiet(dailyDietId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

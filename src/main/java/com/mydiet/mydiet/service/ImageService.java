@@ -39,8 +39,8 @@ public class ImageService {
     public Image updateImage(Long imageId, ImageCreationInput imageInput) {
         var image = getImageOrThrow(imageId);
 
-        Utils.validateStringFieldIsSet(imageInput.getResource(), "resource", imageInput);
-        Utils.validateStringFieldIsSet(imageInput.getName(), "name", imageInput);
+        Utils.validateTextFieldIsSet(imageInput.getResource(), "resource", imageInput);
+        Utils.validateTextFieldIsSet(imageInput.getName(), "name", imageInput);
 
         image.setName(imageInput.getName());
         image.setResource(imageInput.getResource());
@@ -49,7 +49,7 @@ public class ImageService {
     }
 
     public Image mapToImage(ImageCreationInput imageInput) {
-        Utils.validateStringFieldIsSet(imageInput.getResource(), "resource", imageInput);
+        Utils.validateTextFieldIsSet(imageInput.getResource(), "resource", imageInput);
         return Image.builder()
                 .name(imageInput.getName())
                 .resource(imageInput.getResource())

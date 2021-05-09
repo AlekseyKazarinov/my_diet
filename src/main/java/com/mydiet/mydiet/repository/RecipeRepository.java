@@ -20,10 +20,10 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     Page<Recipe> findAllByLanguageAndTotalKcalLessThanEqualOrderByTotalKcalDesc(Language language, Double totalKcal, Pageable pageRequest);
     Page<Recipe> findAllByLanguageAndTotalKcalGreaterThanOrderByTotalKcalAsc(Language language, Double totalKcal, Pageable pageRequest);
 
-    @Query("SELECT r FROM RECIPE r JOIN r.lifestyles s WHERE s = :lifestyle")
-    List<Recipe> retrieveByTag(@Param("lifestyle") Lifestyle lifestyle);
+    @Query(value = "SELECT r FROM RECIPE r JOIN r.lifestyles s WHERE s = ?1", nativeQuery = true)
+    List<Recipe> retrieveByTag(Lifestyle lifestyle);
 
-    @Query("SELECT r FROM RECIPE r JOIN r.lifestyles s WHERE r.NAME = :name AND s = :lifestyle")
-    List<Recipe> retrieveByNameFilterByTag(@Param("name") String name, @Param("lifestyle") Lifestyle lifestyle);
+    @Query(value = "SELECT r FROM RECIPE r JOIN r.lifestyles s WHERE r.NAME = ?1 AND s = ?2", nativeQuery = true)
+    List<Recipe> retrieveByNameFilterByTag(String name, Lifestyle lifestyle);
 
 }

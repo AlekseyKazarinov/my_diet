@@ -32,7 +32,7 @@ public class ProductController {
     @ApiOperation("Get Product by Id")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Product received", response = Product.class),
-            @ApiResponse(code = 204, message = "Product does not exist")
+            @ApiResponse(code = 204, message = "Product does not exist", response = Object.class)
     })
     public ResponseEntity<Product> getProduct(@PathVariable Long productId) {
         return productRepository.findById(productId)
@@ -44,7 +44,7 @@ public class ProductController {
     @ApiOperation("Change Product name by productId")
     @ApiResponses(value = {
             @ApiResponse(code = 202, message = "Product updated", response = Product.class),
-            @ApiResponse(code = 404, message = "Product not found")
+            @ApiResponse(code = 404, message = "Product not found", response = Object.class)
     })
     public ResponseEntity<Product> updateProductName(@PathVariable Long productId, @RequestParam String productName) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)

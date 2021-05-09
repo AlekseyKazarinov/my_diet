@@ -27,7 +27,7 @@ public class PrepareDataRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        saveDailyDietWithMealIds();
+        //saveDailyDietWithMealIds();
 
         log.info("Data preparation finished.");
     }

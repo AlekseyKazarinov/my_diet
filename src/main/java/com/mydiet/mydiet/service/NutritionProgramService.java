@@ -3,10 +3,10 @@ package com.mydiet.mydiet.service;
 import com.google.common.collect.Sets;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
+import com.mydiet.mydiet.domain.dto.input.ProgramTranslationInput;
 import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.BadRequestException;
-import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
@@ -18,8 +18,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,6 +41,8 @@ public class NutritionProgramService {
     private final NutritionProgramRepository nutritionProgramRepository;
     private final ShoppingListService shoppingListService;
     private final ShoppingListRepository shoppingListRepository;
+    private final NutritionProgramStorageService programStorageService;
+    private final RecipeService recipeService;
 
     public NutritionProgram createValidatedNutritionProgram(NutritionProgramInput programCreationInput) {
         validateNutritionProgramInput(programCreationInput);
@@ -48,10 +50,10 @@ public class NutritionProgramService {
     }
 
     private void validateNutritionProgramInput(NutritionProgramInput programInput) {
-        Utils.validateStringFieldIsSet(programInput.getName(), "name", programInput);
-        Utils.validateStringFieldIsSet(programInput.getDescription(), "description", programInput);
-        Utils.validateStringFieldIsSet(programInput.getShortDescription(), "shortDescription", programInput);
-        //Utils.validateStringFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
+        Utils.validateTextFieldIsSet(programInput.getName(), "name", programInput);
+        Utils.validateTextFieldIsSet(programInput.getDescription(), "description", programInput);
+        Utils.validateTextFieldIsSet(programInput.getShortDescription(), "shortDescription", programInput);
+        //Utils.validateTextFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
         var numberOfMeals = programInput.getDailyNumberOfMeals();
         Utils.validateFieldIsNonNegative(numberOfMeals, "number of meals", programInput);
         Utils.validateCollectionContainsElements(programInput.getDailyDietIds(), "Daily Diet Ids", programInput);
@@ -62,6 +64,64 @@ public class NutritionProgramService {
 
         validateLifestyles(programInput);
         validateLanguage(programInput);
+    }
+
+    public NutritionProgram translateValidatedNutritionProgram(
+            Long programNumber,
+            ProgramTranslationInput programTranslationInput
+    ) {
+        Utils.validateTextFieldIsSet(programTranslationInput.getName(), "name", programTranslationInput);
+        Utils.validateTextFieldIsSet(programTranslationInput.getDescription(), "description", programTranslationInput);
+        Utils.validateTextFieldIsSet(programTranslationInput.getShortDescription(), "shortDescription", programTranslationInput);
+
+        var program = programStorageService.getProgramOrElseThrow(programNumber);
+
+        if (Language.areEqual(program.getLanguage(), programTranslationInput.getLanguage())) {
+            throw new ValidationException("Nutrition Program can not be translated into the same language");
+        }
+
+        var optionalAlreadyTranslatedRecipe = nutritionProgramRepository.findProgramByLangIdAndLanguage(
+                program.getLangId(), program.getLanguage()
+        );
+
+        if (optionalAlreadyTranslatedRecipe.isPresent()) {
+            throw new ValidationException(
+                    String.format("Translation into %s for Nutrition Program with Number #%s is Nutrition Program #%s",
+                            Language.print(programTranslationInput.getLanguage()),
+                            program.getNumber(),
+                            optionalAlreadyTranslatedRecipe.get().getNumber()
+                    ));
+        }
+
+        if (!StringUtils.isEmpty(program.getAdditionalInfo()) && StringUtils.isEmpty(programTranslationInput.getAdditionalInfo())) {
+            log.warn("ProgramTranslationInput does not contain additionalInfo unlike original Nutrition Program #{} in {} language",
+                    program.getNumber(), Language.print(programTranslationInput.getLanguage())
+            );
+        }
+
+
+        // todo: implement validation and copying all nested entities (recipes, meals, daily diets)
+        /*program.getDailyDiets().stream()
+                .flatMap(dailyDiet -> dailyDiet.getMeals().stream())
+                .map(Meal::getRecipe)
+                .map(recipe -> recipeService.findRecipeTranslationInto(programTranslationInput.getLanguage(), recipe)
+                        .orElseThrow(() -> new ValidationException(
+                                String.format("Recipe #%s has no translation into %s language for ProgramTranslationInput",
+                                        recipe.getId(),
+                                        programTranslationInput.getLanguage())
+                                ))
+                )*/
+
+
+        program.setNumber(null);
+        program.setLanguage(programTranslationInput.getLanguage());
+
+        program.setName(programTranslationInput.getName());
+        program.setDescription(programTranslationInput.getDescription());
+        program.setShortDescription(programTranslationInput.getShortDescription());
+        program.setAdditionalInfo(programTranslationInput.getAdditionalInfo());
+
+        return nutritionProgramRepository.save(program);
     }
 
     private void validateLanguage(NutritionProgramInput programInput) {
@@ -154,12 +214,7 @@ public class NutritionProgramService {
         return nutritionProgramRepository.findById(programNumber);
     }
 
-    public NutritionProgram getProgramOrElseThrow(Long programNumber) {
-        return nutritionProgramRepository.findById(programNumber)
-                .orElseThrow(
-                    () -> new NotFoundException(String.format("Nutrition Program #%s does not exist", programNumber))
-                );
-    }
+
 
     public Long getTotalNumberOfAllPrograms() {
         return nutritionProgramRepository.count();
@@ -234,34 +289,6 @@ public class NutritionProgramService {
         return Optional.empty();
     }
 
-    public Integer getNumberOfWeeksFor(NutritionProgram nutritionProgram) {
-        var numberOfDays = nutritionProgram.getDailyDiets().size();
-        var fullWeeks = numberOfDays / 7;
-        var remainder = numberOfDays % 7;
-
-        if (remainder == 0) {
-            return fullWeeks;
-        } else {
-            return ++fullWeeks;
-        }
-    }
-
-    public List<DailyDiet> getDailyDietsForWeekNo(Integer weekNumber, NutritionProgram nutritionProgram) {
-        Assert.notNull(weekNumber, "weekNumber must not be null");
-
-        var weeks = getNumberOfWeeksFor(nutritionProgram);
-
-        if (weekNumber > weeks) {
-            return Collections.emptyList();
-        }
-
-        var dailyDiets = nutritionProgram.getDailyDiets();
-        var firstDay = 7 * (weekNumber - 1);
-        var lastDay = Math.min( 7 * weekNumber, dailyDiets.size());
-
-        return dailyDiets.subList(firstDay, lastDay);
-    }
-
     public Set<Product> getListOfProductsFor(NutritionProgram nutritionProgram) {
         var productSet = new HashSet<Product>();
 
@@ -278,17 +305,17 @@ public class NutritionProgramService {
     }
 
     public NutritionProgram acceptProgram(Long programNumber) {
-        var program = getProgramOrElseThrow(programNumber);
+        var program = programStorageService.getProgramOrElseThrow(programNumber);
         return setStatusFor(program, ACCEPTED);
     }
 
     public NutritionProgram publishProgram(Long programNumber) {
-        var program = getProgramOrElseThrow(programNumber);
+        var program = programStorageService.getProgramOrElseThrow(programNumber);
         return setStatusFor(program, PUBLISHED);
     }
 
     public NutritionProgram revertProgram(Long programNumber) {
-        var program = getProgramOrElseThrow(programNumber);
+        var program = programStorageService.getProgramOrElseThrow(programNumber);
         return revertStatusFor(program);
     }
 
@@ -436,7 +463,7 @@ public class NutritionProgramService {
         var numberBelow = maxNumber - numberAbove;
 
         var programsPageAbove = nutritionProgramRepository
-                .findAllByLanguageAndStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(
+                .findAllByLanguageAndStatusAndLifestylesInAndKcalGreaterThanOrderByKcalAsc(
                         language,
                         status,
                         lifestyles,
@@ -445,7 +472,7 @@ public class NutritionProgramService {
                 );
 
         var programsPageBelow = nutritionProgramRepository
-                .findAllByLanguageAndStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(
+                .findAllByLanguageAndStatusAndLifestylesInAndKcalLessThanEqualOrderByKcalDesc(
                         language,
                         status,
                         lifestyles,
@@ -467,8 +494,8 @@ public class NutritionProgramService {
             throw new BadRequestException("Product exclusion is only available for query with status ACCEPTED or PUBLISHED");
         }
 
-        var highPrograms = nutritionProgramRepository.findAllByLanguageAndStatusAndLifestylesAndKcalGreaterThanOrderByKcalAsc(language, status, lifestyles, kcal);
-        var lowPrograms = nutritionProgramRepository.findAllByLanguageAndStatusAndLifestylesAndKcalLessThanEqualOrderByKcalDesc(language, status, lifestyles, kcal);
+        var highPrograms = nutritionProgramRepository.findAllByLanguageAndStatusAndLifestylesInAndKcalGreaterThanOrderByKcalAsc(language, status, lifestyles, kcal);
+        var lowPrograms = nutritionProgramRepository.findAllByLanguageAndStatusAndLifestylesInAndKcalLessThanEqualOrderByKcalDesc(language, status, lifestyles, kcal);
 
         var numberAbove = maxNumber / 2;
         var numberBelow = maxNumber - numberAbove;

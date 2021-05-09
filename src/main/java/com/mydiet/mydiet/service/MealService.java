@@ -27,7 +27,7 @@ public class MealService {
     }
 
     private void validateMealInput(MealInput mealInput) {
-        Utils.validateStringFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
+        Utils.validateTextFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
         recipeService.validateRecipeInput(mealInput.getRecipeInput());
     }
 

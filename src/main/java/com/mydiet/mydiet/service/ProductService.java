@@ -12,7 +12,6 @@ import com.mydiet.mydiet.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -87,7 +86,7 @@ public class ProductService {
     public void validateProductInput(ProductInput input) {
         Preconditions.checkNotNull(input, "Product is null");
 
-        Utils.validateStringFieldIsSet(input.getName(), "Name", input);
+        Utils.validateTextFieldIsSet(input.getName(), "Name", input);
         ProductType.validateDescription(input.getProductType());
         Consistence.validateConsistence(input.getConsistence());
     }
