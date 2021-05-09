@@ -23,13 +23,23 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    public Product createValidatedProduct(ProductInput input) {
+        validateProductInput(input);
+        return createProduct(input);
+    }
+
+    public Product updateValidatedProduct(Long productId, ProductInput input) {
+        validateProductInput(input);
+        return updateProduct(productId, input);
+    }
+
     public Product createProduct(ProductInput productCreationInput) {
         var product = Product.builder()
                 .name(productCreationInput.getName())
                 .langId(UUID.randomUUID().toString())
                 .language(Optional.ofNullable(productCreationInput.getLanguage()).orElse(Language.RUSSIAN))
-                .productType(ProductType.of(productCreationInput.getProductType()))
-                .consistence(Consistence.of(productCreationInput.getConsistence()))
+                .productType(productCreationInput.getProductType())
+                .consistence(productCreationInput.getConsistence())
                 .build();
 
         return saveProduct(product);
@@ -72,23 +82,20 @@ public class ProductService {
         var product = getProductOrThrow(productId);
 
         product.setName(productUpdateInput.getName());
-        product.setProductType(ProductType.of(productUpdateInput.getProductType()));
+        product.setProductType(productUpdateInput.getProductType());
         product.setLanguage(Optional.ofNullable(productUpdateInput.getLanguage()).orElse(Language.RUSSIAN));
 
         return saveProduct(product);
     }
 
-    public Product createValidatedProduct(ProductInput input) {
-        validateProductInput(input);
-        return createProduct(input);
-    }
+
 
     public void validateProductInput(ProductInput input) {
         Preconditions.checkNotNull(input, "Product is null");
 
         Utils.validateTextFieldIsSet(input.getName(), "Name", input);
-        ProductType.validateDescription(input.getProductType());
-        Consistence.validateConsistence(input.getConsistence());
+        //ProductType.validateDescription(input.getProductType());
+        //Consistence.validateConsistence(input.getConsistence());
     }
 
 }

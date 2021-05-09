@@ -26,7 +26,7 @@ public class IngredientService {
         Preconditions.checkNotNull(ingredient, "Ingredient is null");
 
         Utils.validateFieldIsNonNegative(ingredient.getTotalQuantity(), "TotalQuantity", ingredient);
-        QuantityUnit.validateUnit(ingredient.getUnit());
+        //QuantityUnit.validateUnit(ingredient.getUnit());
 
         productService.validateProductInput(ingredient.getProduct());
     }
@@ -36,7 +36,7 @@ public class IngredientService {
 
         var ingredient = Ingredient.builder()
                 .product(product)
-                .unit(QuantityUnit.of(ingredientCreationInput.getUnit()))
+                .unit(ingredientCreationInput.getUnit())
                 .totalQuantity(ingredientCreationInput.getTotalQuantity())
                 .build();
 
@@ -68,7 +68,7 @@ public class IngredientService {
 
         productService.updateProduct(ingredient.getProduct().getId(), ingredientUpdateInput.getProduct());
         ingredient.setTotalQuantity(ingredientUpdateInput.getTotalQuantity());
-        ingredient.setUnit(QuantityUnit.of(ingredientUpdateInput.getUnit()));
+        ingredient.setUnit(ingredientUpdateInput.getUnit());
 
         ingredient = ingredientRepository.save(ingredient);
         domainEventPublisher.publishEvent(ingredientId, SourceEntity.INGREDIENT);

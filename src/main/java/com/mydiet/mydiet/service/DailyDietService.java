@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.mydiet.mydiet.domain.dto.input.DailyDietInput;
 import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.domain.entity.Language;
+import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
@@ -16,6 +17,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.mydiet.mydiet.domain.entity.Language.areEqual;
 
@@ -34,19 +37,14 @@ public class DailyDietService {
     }
 
     public DailyDiet createDailyDiet(DailyDietInput dailyDietCreationInput) {
-        var listOfMeals = new HashSet<Meal>();
-
         var lifestyles = dailyDietCreationInput.getLifestyles();
 
+        var listOfMeals = dailyDietCreationInput.getMealIds().stream()
+                .map(mealService::getMealOrElseThrow)
+                .collect(Collectors.toSet());
+
         if (CollectionUtils.isEmpty(lifestyles)) {
-            lifestyles = dailyDietCreationInput.getMealIds().stream()
-                    .map(mealService::getMealOrElseThrow)
-                    .map(meal -> {
-                        listOfMeals.add(meal);
-                        return meal.getRecipe().getLifestyles();
-                    })
-                    .reduce(Sets::intersection)
-                    .orElse(Collections.emptySet());
+            lifestyles = deriveLifestylesFromMeals(listOfMeals);
         }
 
         var dailyDiet = DailyDiet.builder()
@@ -56,6 +54,13 @@ public class DailyDietService {
                 .build();
 
         return saveIfOriginal(dailyDiet);
+    }
+
+    private Set<Lifestyle> deriveLifestylesFromMeals(Set<Meal> meals) {
+        return meals.stream()
+                .map(meal -> meal.getRecipe().getLifestyles())
+                .reduce(Sets::intersection)
+                .orElse(Collections.emptySet());
     }
 
     public DailyDiet saveIfOriginal(DailyDiet dailyDiet) {
@@ -137,6 +142,27 @@ public class DailyDietService {
 
            throw new ValidationException(message);
        }
+    }
+
+    public DailyDiet updateDailyDiet(Long dailyDietId, DailyDietInput dailyDietUpdateInput) {
+        validateDailyDietInput(dailyDietUpdateInput);
+        var dailyDiet = getDailyDietOrElseThrow(dailyDietId);
+
+        var lifestyles = dailyDietUpdateInput.getLifestyles();
+
+        var listOfMeals = dailyDietUpdateInput.getMealIds().stream()
+                .map(mealService::getMealOrElseThrow)
+                .collect(Collectors.toSet());
+
+        if (CollectionUtils.isEmpty(lifestyles)) {
+            lifestyles = deriveLifestylesFromMeals(listOfMeals);
+        }
+
+        dailyDiet.setLifestyles(lifestyles);
+        dailyDiet.setMeals(listOfMeals);
+        dailyDiet.setName(dailyDietUpdateInput.getName());
+
+        return saveIfOriginal(dailyDiet);
     }
 
     public DailyDiet updateDailyDietName(Long dailyDietId, String newDailyDietName) {

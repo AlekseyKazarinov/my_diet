@@ -224,8 +224,11 @@ public class RecipeService {
         return recipeList.stream().sorted(recipeComparatorByKcal).collect(Collectors.toList());
     }
 
-    public void validateRecipeInput(RecipeInput recipeCreationInput) {
-        validateRecipeSpecificFields(recipeCreationInput);
+    public void validateRecipeInput(RecipeInput recipeInput) {
+        if (recipeInput == null) {
+            throw new ValidationException("recipeInput == null: recipeInput must be set");
+        }
+        validateRecipeSpecificFields(recipeInput);
 
         /*var recipeName = recipeCreationInput.getName();
         if (recipeRepository.findRecipeByName(recipeName).isPresent()) {
@@ -234,8 +237,8 @@ public class RecipeService {
             throw new ValidationException(message);
         }*/
 
-        validateIngredientsList(recipeCreationInput);
-        validateLanguage(recipeCreationInput);
+        validateIngredientsList(recipeInput);
+        validateLanguage(recipeInput);
     }
 
     private void validateLanguage(RecipeInput recipeInput) {

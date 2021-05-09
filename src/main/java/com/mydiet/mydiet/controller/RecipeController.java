@@ -71,7 +71,7 @@ public class RecipeController {
      * This is very resource intensive endpoint
      * @return all recipes stored in the database
      */
-    @ApiOperation(value = "Get All Recipes (Use this endpoint judiciously")
+    @ApiOperation(value = "Get All Recipes (Use this endpoint judiciously, this endpoint is highly resource-consuming)")
     @ApiResponses(value = @ApiResponse(code = 200, message = "All Recipes received", response = Recipe[].class))
     @GetMapping(path = "/all")
     public ResponseEntity<List<Recipe>> getAllRecipes() {
@@ -120,6 +120,8 @@ public class RecipeController {
         var image = recipeService.setImageForRecipe(recipeId, imageName, imageSource);
         return ResponseEntity.status(HttpStatus.OK).body(image);
     }
+
+    // todo: delete Recipe
 
 /*
 Update description for a recipe:

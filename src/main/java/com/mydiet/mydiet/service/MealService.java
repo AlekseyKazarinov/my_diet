@@ -1,8 +1,10 @@
 package com.mydiet.mydiet.service;
 
 import com.mydiet.mydiet.domain.dto.input.MealInput;
+import com.mydiet.mydiet.domain.dto.input.MealInputShortened;
 import com.mydiet.mydiet.domain.entity.FoodTime;
 import com.mydiet.mydiet.domain.entity.Meal;
+import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.repository.MealRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +23,35 @@ public class MealService {
     private final RecipeService recipeService;
     private final MealRepository mealRepository;
 
+    public Meal createValidatedMealByShortenedInput(MealInputShortened mealInputShortened) {
+        validateShortenedMealInput(mealInputShortened);
+        var recipe = recipeService.getRecipeOrElseThrow(mealInputShortened.getRecipeId());
+        return createMealByShortenedInput(mealInputShortened, recipe);
+
+    }
+
+    private void validateShortenedMealInput(MealInputShortened mealInputShortened) {
+        Utils.validateFieldIsNonNegative(mealInputShortened.getRecipeId(), "recipeId", mealInputShortened);
+        Utils.validateFieldIsSet(mealInputShortened.getFoodTime(), "FoodTime", mealInputShortened);
+    }
+
+    private Meal createMealByShortenedInput(MealInputShortened mealInputShortened, Recipe recipe) {
+        var meal = Meal.builder()
+                .recipe(recipe)
+                .foodTime(mealInputShortened.getFoodTime())
+                .build();
+
+        return saveIfOriginal(meal);
+    }
+
     public Meal createValidatedMeal(MealInput mealCreationInput) {
         validateMealInput(mealCreationInput);
+
         return createMeal(mealCreationInput);
     }
 
     private void validateMealInput(MealInput mealInput) {
-        Utils.validateTextFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
+        Utils.validateFieldIsSet(mealInput.getFoodTime(), "FoodTime", mealInput);
         recipeService.validateRecipeInput(mealInput.getRecipeInput());
     }
 
@@ -36,7 +60,7 @@ public class MealService {
 
         var meal = Meal.builder()
                 .recipe(recipe)
-                .foodTime(FoodTime.of(mealCreationInput.getFoodTime()))
+                .foodTime(mealCreationInput.getFoodTime())
                 .build();
 
         return saveIfOriginal(meal);
@@ -76,12 +100,16 @@ public class MealService {
     public Meal updateMeal(Long mealId, MealInput mealUpdateInput) {
         var meal = getMealOrElseThrow(mealId);
 
-        if (mealUpdateInput.getRecipeInput() != null) {
-            var updatedRecipe = recipeService.createRecipe(mealUpdateInput.getRecipeInput());
-            meal.setRecipe(updatedRecipe);
+        if (meal.getRecipe() != null) {
+            meal.setRecipe(recipeService.updateValidatedRecipe(
+                    meal.getRecipe().getId(),
+                    mealUpdateInput.getRecipeInput())
+            );
+        } else {
+            meal.setRecipe(recipeService.createRecipe(mealUpdateInput.getRecipeInput()));
         }
 
-        meal.setFoodTime(FoodTime.of(mealUpdateInput.getFoodTime()));
+        meal.setFoodTime(mealUpdateInput.getFoodTime());
         return mealRepository.save(meal);
     }
 
@@ -106,5 +134,15 @@ public class MealService {
         Utils.validateTextVariableIsSet(foodTime, "foodTime");
 
         return mealRepository.findMealsByFoodTime(FoodTime.of(foodTime));
+    }
+
+    public List<Meal> getMealsByFoodTimeWithinKcalRange(FoodTime foodTime, Double minKcal, Double maxKcal) {
+        Utils.validateVariableIsNonNegative(minKcal, "minKcal");
+
+        return mealRepository.findMealByFoodTimeAndRecipe_TotalKcalBetween(foodTime, minKcal, maxKcal);
+    }
+
+    public void deleteMeal(Long mealId) {
+        mealRepository.deleteById(mealId);
     }
 }

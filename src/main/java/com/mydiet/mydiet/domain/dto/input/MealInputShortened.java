@@ -4,9 +4,9 @@ import com.mydiet.mydiet.domain.entity.FoodTime;
 import lombok.Data;
 
 @Data
-public class MealInput {
+public class MealInputShortened {
 
-    private RecipeInput recipeInput;
+    private Long recipeId;
     private FoodTime foodTime;
 
 }

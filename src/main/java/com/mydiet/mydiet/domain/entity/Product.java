@@ -34,18 +34,9 @@ public class Product {
     private String   langId;     // grouping by the same context || temporary unused
     private Language language;
 
-    @JsonIgnore
-    private Double kcalPer100g;  // todo: remove it?
-    @JsonIgnore
-    private Double proteins;  // todo: remove it?
-    @JsonIgnore
-    private Double fats;  // todo: remove it?
-    @JsonIgnore
-    private Double carbohydrates;  // todo: remove it?
-
     private ProductType productType;
 
-    @JsonProperty(access = WRITE_ONLY)
+    //@JsonProperty(access = WRITE_ONLY)
     private Consistence consistence;
 
     @JsonIgnore

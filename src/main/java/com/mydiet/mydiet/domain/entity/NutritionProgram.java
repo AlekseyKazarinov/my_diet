@@ -35,7 +35,7 @@ public class NutritionProgram {
     @JsonProperty(access = READ_ONLY)
     private Instant lastModifiedAt;
 
-    @JsonProperty(access = READ_ONLY)
+    //@JsonProperty(access = READ_ONLY)  - commented. This property will be read-only in entity representing the program in the api for android applications
     private Status status;
 
     //@Index(...)

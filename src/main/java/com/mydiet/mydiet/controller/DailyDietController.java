@@ -37,27 +37,37 @@ public class DailyDietController {
                            @ApiResponse(code = 204, message = "Daily Diet does not exist", response = Object.class)})
     public ResponseEntity<DailyDiet> getDailyDiet(@PathVariable @NonNull Long dailyDietId) {
         var optionalDailyDiet = dailyDietService.findDailyDietById(dailyDietId);
-        if (optionalDailyDiet.isPresent()) {
-            return ResponseEntity.ok(optionalDailyDiet.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
+        return optionalDailyDiet.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
+    }
+
+    @PutMapping("/{dailyDietId}/update")
+    @ApiOperation(value = "Update Daily Diet (It is an optional endpoint, you may delete and create DailyDiet again instead")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Daily Diet updated", response = DailyDiet.class),
+            @ApiResponse(code = 404, message = "Daily Diet does not exist", response = ErrorMessage.class)})
+    public ResponseEntity<DailyDiet> updateDailyDiet(
+            @PathVariable Long dailyDietId,
+            @RequestBody DailyDietInput dailyDietUpdateInput
+    ) {
+        var updatedDailyDiet = dailyDietService.updateDailyDiet(dailyDietId, dailyDietUpdateInput);
+        return ResponseEntity.accepted().body(updatedDailyDiet);
     }
 
     @PatchMapping("/{dailyDietId}/name/{dailyDietName}")
     @ApiOperation(value = "Update name for Daily Diet")
-    @ApiResponses(value = {@ApiResponse(code = 201, message = "Daily Diet created", response = DailyDiet.class),
+    @ApiResponses(value = {@ApiResponse(code = 202, message = "Daily Diet updated", response = DailyDiet.class),
             @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)})
     public ResponseEntity<DailyDiet> updateDailyDietName(@PathVariable Long dailyDietId,
                                                          @PathVariable String dailyDietName) {
         var dailyDiet = dailyDietService.updateDailyDietName(dailyDietId, dailyDietName);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dailyDiet);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(dailyDiet);
     }
 
     @DeleteMapping("/{dailyDietId}")
     @ApiOperation(value = "Delete Daily Diet")
     @ApiResponses(value = @ApiResponse(code = 204, message = "Daily Diet deleted", response = Object.class))
-    public ResponseEntity<DailyDiet> updateDailyDietName(@PathVariable @NonNull Long dailyDietId) {
+    public ResponseEntity<DailyDiet> deleteDailyDiet(@PathVariable @NonNull Long dailyDietId) {
         dailyDietService.deleteDailyDiet(dailyDietId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

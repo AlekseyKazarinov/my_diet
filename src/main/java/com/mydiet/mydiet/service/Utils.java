@@ -29,7 +29,7 @@ public class Utils {
         }
     }
 
-    public static void validateFieldIsSet(Number value, String fieldName, Object entity) {
+    public static void validateFieldIsSet(Object value, String fieldName, Object entity) {
         if (value == null) {
             var message = String.format("Value %s should be set for creating %s", fieldName, name(entity));
             throw new ValidationException(message);
@@ -50,13 +50,13 @@ public class Utils {
         }
     }
 
-    public static void validateVariableIsNonNegative(Integer value, String valueName) {
+    public static void validateVariableIsNonNegative(Number value, String valueName) {
         if (value == null) {
             var message = String.format(VALUE_NON_NULL, valueName);
             throw new ValidationException(message);
         }
 
-        if (value < 0) {
+        if (value.doubleValue() < 0) {
             var message = String.format(VALUE_NON_NEGATIVE, valueName);
             throw new ValidationException(message);
         }

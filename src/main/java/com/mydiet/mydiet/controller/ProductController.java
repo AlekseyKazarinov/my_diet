@@ -1,6 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.domain.dto.input.ConversionUnitsInput;
+import com.mydiet.mydiet.domain.dto.input.ProductInput;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.infrastructure.ConversionUnits;
 import com.mydiet.mydiet.infrastructure.ConversionUnitsService;
@@ -40,6 +41,20 @@ public class ProductController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
+    @PutMapping("/{productId}")
+    @ApiOperation("Update Product by Id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 202, message = "Product received", response = Product.class),
+            @ApiResponse(code = 204, message = "Product does not exist", response = Object.class)
+    })
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable Long productId,
+            @RequestBody ProductInput productUpdateInput
+    ) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(productService.updateValidatedProduct(productId, productUpdateInput));
+    }
+
     @PatchMapping("/{productId}/name")
     @ApiOperation("Change Product name by productId")
     @ApiResponses(value = {
@@ -65,5 +80,6 @@ public class ProductController {
         return ResponseEntity.ok(convUnits);
     }
 
+    // todo: delete Product
 
 }

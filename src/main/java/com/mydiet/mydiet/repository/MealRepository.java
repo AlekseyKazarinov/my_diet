@@ -13,4 +13,6 @@ public interface MealRepository extends JpaRepository<Meal, Long> {
 
     public List<Meal> findMealsByFoodTime(FoodTime foodTime);
 
+    public List<Meal> findMealByFoodTimeAndRecipe_TotalKcalBetween(FoodTime foodTime, Double totalKcalLeft, Double totalKcalRight);
+
 }

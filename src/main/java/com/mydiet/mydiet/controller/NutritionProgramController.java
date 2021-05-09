@@ -1,6 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.config.ErrorMessage;
+import com.mydiet.mydiet.domain.dto.input.BaseNutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
 import com.mydiet.mydiet.domain.dto.input.ProgramTranslationInput;
@@ -70,6 +71,18 @@ public class NutritionProgramController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
+    // todo: update Nutrition Program specific fields
+
+    @PatchMapping(path = "/{programNumber}/update")
+    @ApiOperation(value = "Update fields on Nutrition Program layer")
+    public ResponseEntity<NutritionProgram> updateNutritionProgram(
+            @PathVariable Long programNumber,
+            @RequestBody BaseNutritionProgramInput baseNutritionProgramInput
+    ) {
+        var updatedProgram = nutritionProgramService.updateNutritionProgram(programNumber, baseNutritionProgramInput);
+        return ResponseEntity.accepted().body(updatedProgram);
+    }
+
     @GetMapping(path = "/count")
     @ApiOperation(value = "Get total number of programs")
     @ApiResponse(code = 200, message = "Total number calculated", response = NutritionProgram.class)
@@ -79,8 +92,6 @@ public class NutritionProgramController {
                 nutritionProgramService.getTotalNumberOfProgramsWithLanguage(language);
         return ResponseEntity.ok(numberOfPrograms);
     }
-
-    // todo: получить программы в состоянии DRAFT, ACCEPTED, PUBLISHED
 
     /**
      * Generic endpoint for retrieving all programs
@@ -142,6 +153,11 @@ public class NutritionProgramController {
     // todo: download N programs, list of numbers for programs not to send
     //
 
-
+    @DeleteMapping(path = "/{programNumber}")
+    @ApiOperation(value = "Delete Nutrition Program by Id")
+    public ResponseEntity<Void> deleteNutritionProgram(@PathVariable Long programNumber) {
+        nutritionProgramService.deleteProgram(programNumber);
+        return ResponseEntity.noContent().build();
+    }
 
 }

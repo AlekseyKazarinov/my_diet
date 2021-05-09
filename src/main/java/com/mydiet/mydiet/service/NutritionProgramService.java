@@ -1,12 +1,14 @@
 package com.mydiet.mydiet.service;
 
 import com.google.common.collect.Sets;
+import com.mydiet.mydiet.domain.dto.input.BaseNutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
 import com.mydiet.mydiet.domain.dto.input.ProgramTranslationInput;
 import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.BadRequestException;
+import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
@@ -50,10 +52,8 @@ public class NutritionProgramService {
     }
 
     private void validateNutritionProgramInput(NutritionProgramInput programInput) {
-        Utils.validateTextFieldIsSet(programInput.getName(), "name", programInput);
-        Utils.validateTextFieldIsSet(programInput.getDescription(), "description", programInput);
-        Utils.validateTextFieldIsSet(programInput.getShortDescription(), "shortDescription", programInput);
-        //Utils.validateTextFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
+        validateBaseNutritionProgramInput(programInput);
+
         var numberOfMeals = programInput.getDailyNumberOfMeals();
         Utils.validateFieldIsNonNegative(numberOfMeals, "number of meals", programInput);
         Utils.validateCollectionContainsElements(programInput.getDailyDietIds(), "Daily Diet Ids", programInput);
@@ -64,6 +64,13 @@ public class NutritionProgramService {
 
         validateLifestyles(programInput);
         validateLanguage(programInput);
+    }
+
+    private void validateBaseNutritionProgramInput(BaseNutritionProgramInput programInput) {
+        Utils.validateTextFieldIsSet(programInput.getName(), "name", programInput);
+        Utils.validateTextFieldIsSet(programInput.getDescription(), "description", programInput);
+        Utils.validateTextFieldIsSet(programInput.getShortDescription(), "shortDescription", programInput);
+        //Utils.validateTextFieldIsSet(programInput.getBackgroundColour(), "background colour", programInput);
     }
 
     public NutritionProgram translateValidatedNutritionProgram(
@@ -210,11 +217,36 @@ public class NutritionProgramService {
         return nutritionProgramRepository.save(nutritionProgram);
     }
 
+    public NutritionProgram updateNutritionProgram(Long programNumber, BaseNutritionProgramInput baseNutritionProgramInput) {
+        validateBaseNutritionProgramInput(baseNutritionProgramInput);
+
+        var program = getProgramOrElseThrow(programNumber);
+
+        // required properties
+        Optional.ofNullable(baseNutritionProgramInput.getName()).ifPresent(program::setName);
+        Optional.ofNullable(baseNutritionProgramInput.getDescription()).ifPresent(program::setDescription);
+        Optional.ofNullable(baseNutritionProgramInput.getShortDescription()).ifPresent(program::setShortDescription);
+
+        // optional properties
+        Optional.ofNullable(baseNutritionProgramInput.getAdditionalInfo()).ifPresent(program::setAdditionalInfo);
+        Optional.ofNullable(baseNutritionProgramInput.getLightColor()).ifPresent(program::setLightColor);
+        Optional.ofNullable(baseNutritionProgramInput.getDayColor()).ifPresent(program::setDayColor);
+        Optional.ofNullable(baseNutritionProgramInput.getMainColor()).ifPresent(program::setMainColor);
+        Optional.ofNullable(baseNutritionProgramInput.getImage()).ifPresent(baseNutritionProgramInput::setImage);
+
+        return nutritionProgramRepository.save(program);
+    }
+
     public Optional<NutritionProgram> findNutritionProgram(Long programNumber) {
         return nutritionProgramRepository.findById(programNumber);
     }
 
-
+    private NutritionProgram getProgramOrElseThrow(Long programNumber) {
+        return nutritionProgramRepository.findById(programNumber)
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("Nutrition Program with programNumber: %s does not exist", programNumber))
+                );
+    }
 
     public Long getTotalNumberOfAllPrograms() {
         return nutritionProgramRepository.count();
@@ -527,5 +559,9 @@ public class NutritionProgramService {
         commonProductNames.retainAll(productExclusion.getNames());
 
         return commonProductNames.isEmpty();
+    }
+
+    public void deleteProgram(Long programNumber) {
+        nutritionProgramRepository.deleteById(programNumber);
     }
 }

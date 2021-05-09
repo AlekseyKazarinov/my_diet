@@ -51,4 +51,6 @@ public class AppController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
+    // todo: implement several useful endpoints for this controller as for NutritionProgramController
+
 }
