@@ -71,8 +71,6 @@ public class NutritionProgramController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
-    // todo: update Nutrition Program specific fields
-
     @PatchMapping(path = "/{programNumber}/update")
     @ApiOperation(value = "Update fields on Nutrition Program layer")
     public ResponseEntity<NutritionProgram> updateNutritionProgram(
@@ -94,9 +92,10 @@ public class NutritionProgramController {
     }
 
     /**
-     * Generic endpoint for retrieving all programs
+     * General endpoint for retrieving all programs
      */
-    @GetMapping("/")
+    @GetMapping
+    @ApiOperation(value = "General endpoint for retrieving all programs which covers all needed cases", notes = "Very useful")
     public ResponseEntity<List<NutritionProgram>> getNutritionPrograms(
             @RequestParam(defaultValue = "RUSSIAN") Language language,
             @RequestParam(required = false) Integer kcal,

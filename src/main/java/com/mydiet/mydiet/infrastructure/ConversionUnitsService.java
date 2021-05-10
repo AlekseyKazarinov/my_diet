@@ -160,7 +160,6 @@ public class ConversionUnitsService {
         return conversionUnitsRepository.save(convUnits);
     }
 
-
     private void validateConversionUnitsInput(ConversionUnitsInput convUnitsInput) {
         Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getTeaspoon(), "teaspoon", convUnitsInput);
         Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getTablespoon(), "tablespoon", convUnitsInput);
@@ -170,6 +169,5 @@ public class ConversionUnitsService {
         Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getPiece(), "piece", convUnitsInput);
         Utils.validateFieldIsNonNegativeIfExists(convUnitsInput.getPinch(), "pinch", convUnitsInput);
     }
-
 
 }

@@ -44,7 +44,7 @@ public class NutritionProgram {
 
     private String name;             // preview
     private String shortDescription; // preview
-    private String description;      // todo: stub for language: default = Russian
+    private String description;
     private String additionalInfo;   // optional
 
     private Integer kcal;

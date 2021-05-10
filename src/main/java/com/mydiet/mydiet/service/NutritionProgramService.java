@@ -220,7 +220,7 @@ public class NutritionProgramService {
     public NutritionProgram updateNutritionProgram(Long programNumber, BaseNutritionProgramInput baseNutritionProgramInput) {
         validateBaseNutritionProgramInput(baseNutritionProgramInput);
 
-        var program = getProgramOrElseThrow(programNumber);
+        var program = programStorageService.getProgramOrElseThrow(programNumber);
 
         // required properties
         Optional.ofNullable(baseNutritionProgramInput.getName()).ifPresent(program::setName);
@@ -239,13 +239,6 @@ public class NutritionProgramService {
 
     public Optional<NutritionProgram> findNutritionProgram(Long programNumber) {
         return nutritionProgramRepository.findById(programNumber);
-    }
-
-    private NutritionProgram getProgramOrElseThrow(Long programNumber) {
-        return nutritionProgramRepository.findById(programNumber)
-                .orElseThrow(
-                        () -> new NotFoundException(String.format("Nutrition Program with programNumber: %s does not exist", programNumber))
-                );
     }
 
     public Long getTotalNumberOfAllPrograms() {
@@ -562,6 +555,7 @@ public class NutritionProgramService {
     }
 
     public void deleteProgram(Long programNumber) {
+        shoppingListService.deleteShoppingList(programNumber);
         nutritionProgramRepository.deleteById(programNumber);
     }
 }

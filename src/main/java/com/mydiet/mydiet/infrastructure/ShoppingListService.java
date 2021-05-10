@@ -2,11 +2,8 @@ package com.mydiet.mydiet.infrastructure;
 
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.BadRequestException;
-import com.mydiet.mydiet.domain.exception.GenericException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
-import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import com.mydiet.mydiet.repository.ShoppingListRepository;
-import com.mydiet.mydiet.service.NutritionProgramService;
 import com.mydiet.mydiet.service.NutritionProgramStorageService;
 import com.mydiet.mydiet.service.Utils;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +24,9 @@ public class ShoppingListService {
 
     private final UnitGraphService unitGraphService;
     private final ShoppingListRepository shoppingListRepository;
-    private final NutritionProgramRepository nutritionProgramRepository;
     private final NutritionProgramStorageService programStorageService;
 
-    public Optional<ShoppingList> getShoppingListFor(Long programNumber) {
+    public Optional<ShoppingList> findShoppingListFor(Long programNumber) {
         return shoppingListRepository.findById(programNumber);
     }
 
@@ -41,14 +37,15 @@ public class ShoppingListService {
                 );
     }
 
-    //todo: rewrite this code. Do not recalculate every time
     public WeekList getShoppingListForWeekNo(Integer weekNumber, Long programNumber) {
-        var nutritionProgram = programStorageService.getProgramOrElseThrow(programNumber);
-        return generateListOfProductsForWeekNo(weekNumber, nutritionProgram);
+        programStorageService.getProgramOrElseThrow(programNumber);
+        var shoppingList = getShoppingListOrElseThrow(programNumber);
+
+        return shoppingList.getListForWeekNo(weekNumber);
     }
 
     public void replaceShoppingListFor(Long programNumber, ShoppingList shoppingList) {
-        var program = getNutritionProgramOrElseThrow(programNumber);
+        var program = programStorageService.getProgramOrElseThrow(programNumber);
 
         throwIfStatusIsIn(program, DRAFT, PUBLISHED);
 
@@ -57,15 +54,10 @@ public class ShoppingListService {
         shoppingListRepository.save(shoppingList);
     }
 
-    private NutritionProgram getNutritionProgramOrElseThrow(Long programNumber) {
-        return nutritionProgramRepository.findById(programNumber)
-                .orElseThrow(() -> new GenericException("Nutrition Program #" + programNumber + " does not exist"));
-    }
-
     public ShoppingList replaceWeekInShoppingListFor(Long programNumber, Integer weekNumber, WeekList weekList) {
         Utils.validateVariableIsNonNegative(weekNumber, "weekNumber");
 
-        var program = getNutritionProgramOrElseThrow(programNumber);
+        var program = programStorageService.getProgramOrElseThrow(programNumber);
         throwIfStatusIsIn(program, DRAFT, PUBLISHED);
 
         var shoppingList = getShoppingListOrElseThrow(programNumber);
@@ -172,6 +164,10 @@ public class ShoppingListService {
        }
 
        return productRowsForTypeMap;
+   }
+
+   public void deleteShoppingList(Long programNumber) {
+       shoppingListRepository.deleteById(programNumber);
    }
 
 }

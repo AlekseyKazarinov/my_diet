@@ -16,14 +16,7 @@ public class WeekList {
     private Long id;
     private Integer                            numberOfWeek;
 
-    /* deprecated
-    @OneToMany
-    @MapKeyEnumerated(value = EnumType.STRING)
-    @MapKeyJoinColumn
-    private Map<ProductType, List<ProductRow>> listsByProductType = new HashMap<>();*/
-
-    // todo: 1) replace listsByProductType with productListsByType; 2) set up correct Hibernate mapping
-    @OneToMany
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     @MapKeyEnumerated(value = EnumType.STRING)
     //@MapKeyJoinColumn
     private Map<ProductType, ProductRowsForType> productListsByType = new HashMap<>();

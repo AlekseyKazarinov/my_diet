@@ -1,10 +1,7 @@
 package com.mydiet.mydiet.controller;
 
-import com.mydiet.mydiet.domain.dto.input.ConversionUnitsInput;
 import com.mydiet.mydiet.domain.dto.input.ProductInput;
 import com.mydiet.mydiet.domain.entity.Product;
-import com.mydiet.mydiet.infrastructure.ConversionUnits;
-import com.mydiet.mydiet.infrastructure.ConversionUnitsService;
 import com.mydiet.mydiet.repository.ProductRepository;
 import com.mydiet.mydiet.service.ProductService;
 import io.swagger.annotations.Api;
@@ -16,9 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @RestController
 @RequestMapping(path = "/products")
 @Api(tags = "Products")
@@ -27,7 +21,6 @@ public class ProductController {
 
     private final ProductService productService;
     private final ProductRepository productRepository;
-    private final ConversionUnitsService conversionUnitsService;
 
     @GetMapping("/{productId}")
     @ApiOperation("Get Product by Id")
@@ -66,20 +59,12 @@ public class ProductController {
                 .body(productService.updateProductName(productId, productName));
     }
 
-    @GetMapping("/{productId}/conversion-units/available-to-set")
-    public ResponseEntity<List<String>> getUnitsWhichCoefficientsAreAvailableToBeSetFor(@PathVariable Long productId) {
-        return ResponseEntity.ok(conversionUnitsService.getConvertibleUnitsForProduct(productId));
+    @DeleteMapping("/{productId}")
+    @ApiOperation(value = "This endpoint is not intended for regular using", notes = "API provides such a function just in case. " +
+            "Regular using may cause inconsistency between all basic entities making work unstable")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) {
+        productRepository.deleteById(productId);
+        return ResponseEntity.noContent().build();
     }
-
-    @PatchMapping("/{productId}/conversion-units")
-    public ResponseEntity<ConversionUnits> updateConversionCoefficientsForProduct(
-            @PathVariable Long productId,
-            @RequestBody ConversionUnitsInput convUnitsUpdate
-    ) {
-        var convUnits = conversionUnitsService.updateConvCoefficientsForProduct(productId, convUnitsUpdate);
-        return ResponseEntity.ok(convUnits);
-    }
-
-    // todo: delete Product
 
 }

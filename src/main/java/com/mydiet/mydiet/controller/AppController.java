@@ -1,10 +1,11 @@
 package com.mydiet.mydiet.controller;
 
+import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.config.SwaggerConfig;
+import com.mydiet.mydiet.domain.dto.output.android.NutritionProgramAppContainer;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
-import com.mydiet.mydiet.domain.entity.Status;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
-import com.mydiet.mydiet.service.NutritionProgramService;
+import com.mydiet.mydiet.service.NutritionProgramConverterService;
 import io.swagger.annotations.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,22 +23,23 @@ import static com.mydiet.mydiet.domain.entity.Status.PUBLISHED;
 @Api(tags = SwaggerConfig.APP_CONTROLLER_TAG)
 public class AppController {
 
-    private final NutritionProgramRepository nutritionProgramRepository;
+    private final NutritionProgramRepository       nutritionProgramRepository;
+    private final NutritionProgramConverterService nutritionProgramConverterService;
 
-    // todo: use app-specific format
     @GetMapping(path = "/nutrition-programs/{programNumber}")
     @ApiOperation(value = "Get a Nutrition Program")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgram.class),
-            @ApiResponse(code = 204, message = "Nutrition Program does not exist")
+            @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgramAppContainer.class),
+            @ApiResponse(code = 404, message = "Nutrition Program not found", response = ErrorMessage.class),
+            @ApiResponse(code = 403, message = "Nutrition Program has not been published and App user does not have access", response = ErrorMessage.class)
     })
-    public ResponseEntity<NutritionProgram> getNutritionProgram(@PathVariable Long programNumber) {
-        var optionalProgram = nutritionProgramRepository.findProgramByNumberAndStatus(programNumber, PUBLISHED);
+    public ResponseEntity<NutritionProgramAppContainer> getNutritionProgram(@PathVariable Long programNumber) {
+        var programApp = nutritionProgramConverterService.getProgramConvertedIntoAppOutputFormat(programNumber);
 
-        return optionalProgram.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
+        return ResponseEntity.ok(programApp);
     }
 
+    // temporary unused. Delete?
     @GetMapping(path = "/nutrition-programs/{programName}")
     @ApiOperation(value = "Get a Nutrition Program")
     @ApiResponses(value = {
@@ -51,6 +53,10 @@ public class AppController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
-    // todo: implement several useful endpoints for this controller as for NutritionProgramController
+    // todo: General endpoint for retrieving all published programs
+
+    // todo: Nutrition Programs with short description
+
+    // todo: retrieve shopping list in app compatible format
 
 }

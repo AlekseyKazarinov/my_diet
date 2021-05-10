@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping(path = "/shopping-lists")
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class ShoppingListController {
     @ApiOperation(value = "Get a Shopping List for Nutrition Program")
     @GetMapping("/{programNumber}")
     public ResponseEntity<ShoppingList> getShoppingListFor(@PathVariable Long programNumber) {
-        var optionalShoppingList = shoppingListService.getShoppingListFor(programNumber);
+        var optionalShoppingList = shoppingListService.findShoppingListFor(programNumber);
 
         return optionalShoppingList.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
@@ -33,7 +35,9 @@ public class ShoppingListController {
                                                         @PathVariable Integer weekNumber
     ) {
         var weekList = shoppingListService.getShoppingListForWeekNo(weekNumber, programNumber);
-        return ResponseEntity.ok(weekList);
+        return Optional.ofNullable(weekList)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @ApiOperation(value = "Update Shopping List for an Nutrition Program")

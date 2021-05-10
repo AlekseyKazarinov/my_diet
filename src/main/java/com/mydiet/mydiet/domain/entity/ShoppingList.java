@@ -1,12 +1,10 @@
 package com.mydiet.mydiet.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mydiet.mydiet.domain.exception.ValidationException;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,7 +18,8 @@ public class ShoppingList {
     @Id
     private Long nutritionProgramNumber;
 
-    @OneToMany
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     private List<WeekList> listsByWeek;
 
     @OneToOne
@@ -41,6 +40,18 @@ public class ShoppingList {
         return listsByWeek.stream()
                 .flatMap(weekList -> weekList.getProductListsByType().keySet().stream())
                 .collect(Collectors.toSet());
+    }
+
+    public WeekList getListForWeekNo(Integer weekNumber) {
+        if (weekNumber <= 0) {
+            throw new ValidationException("Requested weekNumber must be a positive value");
+        }
+
+        if (listsByWeek == null || listsByWeek.size() < weekNumber) {
+            return null;
+        }
+
+        return listsByWeek.get(weekNumber - 1);
     }
 
 
