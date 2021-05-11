@@ -19,4 +19,11 @@ public class NutritionProgramStorageService {
                 );
     }
 
+    public NutritionProgram getProgramOrElseThrow(String name) {
+        return nutritionProgramRepository.findNutritionProgramByName(name)
+                .orElseThrow(
+                        () -> new NotFoundException(String.format("Nutrition Program with name: #%s does not exist", name))
+                );
+    }
+
 }

@@ -95,7 +95,10 @@ public class NutritionProgramController {
      * General endpoint for retrieving all programs
      */
     @GetMapping
-    @ApiOperation(value = "General endpoint for retrieving all programs which covers all needed cases", notes = "Very useful")
+    @ApiOperation(
+            value = "General endpoint for retrieving all programs which covers all needed cases",
+            notes = "Very useful. All parameters are optional. You can combine them in any way\""
+    )
     public ResponseEntity<List<NutritionProgram>> getNutritionPrograms(
             @RequestParam(defaultValue = "RUSSIAN") Language language,
             @RequestParam(required = false) Integer kcal,
@@ -106,8 +109,9 @@ public class NutritionProgramController {
             @RequestBody(required = false) ProductExclusion productExclusion
     ) {
         var programs = nutritionProgramService.getProgramsBy(
-                language, kcal, delta, status, lifestyles, productExclusion, maxNumber);
-        return ResponseEntity.ok(programs);
+                language, kcal, delta, status, lifestyles, productExclusion, maxNumber
+        );
+        return programs.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(programs);
     }
 
     @PutMapping(path = "/{programNumber}/accept")

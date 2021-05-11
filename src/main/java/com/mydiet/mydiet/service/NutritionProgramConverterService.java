@@ -1,8 +1,11 @@
 package com.mydiet.mydiet.service;
 
+import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
 import com.mydiet.mydiet.domain.dto.output.android.*;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
+import com.mydiet.mydiet.domain.entity.Status;
 import com.mydiet.mydiet.domain.exception.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,17 +13,56 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.mydiet.mydiet.domain.entity.Status.PUBLISHED;
 
+/**
+ * This service is used as a converter for Nutrition Programs to application compatible format
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NutritionProgramConverterService {
 
     private final NutritionProgramStorageService programStorageService;
+    private final NutritionProgramService programService;
+
+    public List<NutritionProgramPreview> getProgramPreviewsBy(
+            Language language,
+            Integer kcal,
+            Integer deltaKcal,
+            Set<Lifestyle> lifestyles,
+            ProductExclusion productExclusion,
+            Integer maxNumber
+    ) {
+        var programs = programService.getProgramsBy(language, kcal, deltaKcal, PUBLISHED, lifestyles, productExclusion, maxNumber);
+        return programs.stream()
+                .map(this::convertToPreviewFormat)
+                .collect(Collectors.toList());
+    }
+
+    private NutritionProgramPreview convertToPreviewFormat(NutritionProgram nutritionProgram) {
+        return NutritionProgramPreview.builder()
+                    .number(nutritionProgram.getNumber())
+                    .name(nutritionProgram.getName())
+                    .shortDescription(nutritionProgram.getShortDescription())
+                    .image(nutritionProgram.getImage())
+                    .lightColor(nutritionProgram.getLightColor())
+                .build();
+    }
+
+    public NutritionProgramAppContainer getProgramConvertedIntoAppOutputFormat(Long programNumber) {
+        var program = getProgramForAppUser(programNumber);
+        return convertToAppFormat(program);
+    }
+
+    public NutritionProgramAppContainer getProgramConvertedIntoAppOutputFormat(String programName) {
+        var program = getProgramForAppUser(programName);
+        return convertToAppFormat(program);
+    }
 
     private NutritionProgramAppContainer convertToAppFormat(NutritionProgram nutritionProgram) {
         var images = new HashSet<ImageApp>();
@@ -134,23 +176,28 @@ public class NutritionProgramConverterService {
                 .build();
     }
 
-    public NutritionProgramAppContainer getProgramConvertedIntoAppOutputFormat(Long programNumber) {
-        var program = getProgramForAppUser(programNumber);
-        return convertToAppFormat(program);
-    }
-
     private NutritionProgram getProgramForAppUser(Long programNumber) {
         var program = programStorageService.getProgramOrElseThrow(programNumber);
 
+        checkIfProgramIsPublished(program);
+        return program;
+    }
+
+    private NutritionProgram getProgramForAppUser(String name) {
+        var program = programStorageService.getProgramOrElseThrow(name);
+
+        checkIfProgramIsPublished(program);
+        return program;
+    }
+
+    private void checkIfProgramIsPublished(NutritionProgram program) {
         if (program.getStatus() != PUBLISHED) {
             log.warn("User tried to fetch NOT PUBLISHED Nutrition Program {}", program);
 
             throw new ForbiddenException(
-                    String.format("You don't have access to the unpublished Nutrition Program %s", programNumber)
+                    String.format("You don't have access to the unpublished Nutrition Program %s", program.getNumber())
             );
         }
-
-        return program;
     }
 
 }
