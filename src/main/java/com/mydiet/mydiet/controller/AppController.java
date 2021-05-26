@@ -55,6 +55,7 @@ public class AppController {
         return ResponseEntity.ok(programApp);
     }
 
+    // todo: use projections-based approach. See point 5: https://www.baeldung.com/spring-data-jpa-projections
     @GetMapping(path = "/nutrition-programs/previews")
     @ApiOperation(value = "Get Nutrition Program previews", notes = "All parameters are optional. You can combine them in any way")
     @ApiResponses(value = {
@@ -66,7 +67,7 @@ public class AppController {
             @RequestParam(required = false) Integer kcal,
             @RequestParam(required = false) Integer delta,
             @RequestParam(required = false) Set<Lifestyle> lifestyles,
-            @RequestParam(required = false) Integer maxNumber,
+            @RequestParam(defaultValue = "5", required = false) Integer maxNumber,
             @RequestBody(required = false) ProductExclusion productExclusion
     ) {
         var programPreviews = nutritionProgramConverterService.getProgramPreviewsBy(

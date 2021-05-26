@@ -53,6 +53,7 @@ public class UnitGraph {
 
         // not defined state
         UnitGraph.create(connection().forType(NOT_DEFINED).from(BY_TASTE).to(NOT_USED));
+        UnitGraph.create(connection().forType(NOT_DEFINED).from(OPTIONAL).to(BY_TASTE));
     }
 
     private static void create(Connection connection) {

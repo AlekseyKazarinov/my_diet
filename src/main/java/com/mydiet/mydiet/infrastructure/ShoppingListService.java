@@ -132,7 +132,7 @@ public class ShoppingListService {
               Collectors.groupingBy(
                        Ingredient::getProduct,
                        LinkedHashMap::new,
-                       mapping(i -> new Quantity(i.getTotalQuantity(), i.getUnit()), toList())
+                       mapping(i -> Quantity.of(i.getTotalQuantity(), i.getUnit()), toList())
               ));
    }
 

@@ -7,12 +7,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-
 import java.util.*;
 
 import static com.mydiet.mydiet.domain.entity.QuantityUnit.*;
-import static com.mydiet.mydiet.infrastructure.Consistence.*;
 
 @Slf4j
 @Component
@@ -41,7 +38,7 @@ public class UnitGraphService {
             sumTotalQuantity += transformTo(maxUnit, quantity, product).getTotalQuantity();
         }
 
-        return new Quantity(sumTotalQuantity, maxUnit);
+        return Quantity.of(sumTotalQuantity, maxUnit);
     }
 
     private Quantity transformTo(QuantityUnit resultUnit, Quantity quantity, Product product) {
@@ -69,18 +66,6 @@ public class UnitGraphService {
         quantity.setTotalQuantity(quantity.getTotalQuantity() * totalCoef);
 
         return quantity;
-    }
-
-    @PostConstruct
-    public static void testUnitGraph() {
-
-        log.info("Test 1: GLASS of liquid product > {}", UnitGraph.transformToClosestUnitInShoppingList(GLASS, LIQUID).name());
-        log.info("Test 2: GLASS of solid product > {}", UnitGraph.transformToClosestUnitInShoppingList(GLASS, SOLID).name());
-        log.info("Test 3: TEASPOON of solid product > {}", UnitGraph.transformToClosestUnitInShoppingList(TEASPOON, SOLID).name());
-        log.info("Test 4: TEASPOON of liquid product > {}", UnitGraph.transformToClosestUnitInShoppingList(TEASPOON, LIQUID).name());
-        log.info("Test 5: HEAPED TABLESPOON of solid product > {}", UnitGraph.transformToClosestUnitInShoppingList(HEAPED_TABLESPOON, SOLID).name());
-        log.info("Test 6: PIECE of solid product > {}", UnitGraph.transformToClosestUnitInShoppingList(PIECE, SOLID).name());
-        log.info("Test 7: GRAM of solid product > {}", UnitGraph.getNextStableUnit(GRAM, SOLID).name());
     }
 
 }
