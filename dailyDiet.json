@@ -1,0 +1,28 @@
+{
+  "recipe_map": {
+    "breakfast": {
+      "recipe1": "content1"  // page number = 1
+    },
+    "dinner": {
+      "recipe2": "content2" // page number = 2
+    },
+    "supper": {
+      "recipe3": "content3" // page number = 3
+    }
+  }
+}
+
+
+// PROGRAM DTO
+{
+  "program": {
+    "CONTENT": "CONTENT"
+  },
+  images: {
+  "df": 1
+  },
+  "products":
+  {
+          "productId" : "product"
+            }
+}
