@@ -4,10 +4,12 @@ import com.mydiet.mydiet.domain.dto.input.ProductInput;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.repository.ProductRepository;
 import com.mydiet.mydiet.service.ProductService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path = "/products")
-@Api(tags = "Products")
+@Tag(name = "Products") // Заменено с @Api(tags = ...)
 @RequiredArgsConstructor
 public class ProductController {
 
@@ -23,10 +25,10 @@ public class ProductController {
     private final ProductRepository productRepository;
 
     @GetMapping("/{productId}")
-    @ApiOperation("Get Product by Id")
+    @Operation(summary = "Get Product by Id") // Заменено с @ApiOperation
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Product received", response = Product.class),
-            @ApiResponse(code = 204, message = "Product does not exist", response = Object.class)
+            @ApiResponse(responseCode = "200", description = "Product received", content = @Content(schema = @Schema(implementation = Product.class))),
+            @ApiResponse(responseCode = "204", description = "Product does not exist")
     })
     public ResponseEntity<Product> getProduct(@PathVariable Long productId) {
         return productRepository.findById(productId)
@@ -35,10 +37,10 @@ public class ProductController {
     }
 
     @PutMapping("/{productId}")
-    @ApiOperation("Update Product by Id")
+    @Operation(summary = "Update Product by Id")
     @ApiResponses(value = {
-            @ApiResponse(code = 202, message = "Product received", response = Product.class),
-            @ApiResponse(code = 204, message = "Product does not exist", response = Object.class)
+            @ApiResponse(responseCode = "202", description = "Product received", content = @Content(schema = @Schema(implementation = Product.class))),
+            @ApiResponse(responseCode = "204", description = "Product does not exist")
     })
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long productId,
@@ -49,10 +51,10 @@ public class ProductController {
     }
 
     @PatchMapping("/{productId}/name")
-    @ApiOperation("Change Product name by productId")
+    @Operation(summary = "Change Product name by productId")
     @ApiResponses(value = {
-            @ApiResponse(code = 202, message = "Product updated", response = Product.class),
-            @ApiResponse(code = 404, message = "Product not found", response = Object.class)
+            @ApiResponse(responseCode = "202", description = "Product updated", content = @Content(schema = @Schema(implementation = Product.class))),
+            @ApiResponse(responseCode = "404", description = "Product not found") // Убран response = Object.class, так как для ошибок лучше описывать конкретный класс ошибки (например, ErrorMessage)
     })
     public ResponseEntity<Product> updateProductName(@PathVariable Long productId, @RequestParam String productName) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -60,8 +62,10 @@ public class ProductController {
     }
 
     @DeleteMapping("/{productId}")
-    @ApiOperation(value = "This endpoint is not intended for regular using", notes = "API provides such a function just in case. " +
-            "Regular using may cause inconsistency between all basic entities making work unstable")
+    @Operation(
+            summary = "This endpoint is not intended for regular using",
+            description = "API provides such a function just in case. Regular using may cause inconsistency between all basic entities making work unstable"
+    )
     public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) {
         productRepository.deleteById(productId);
         return ResponseEntity.noContent().build();

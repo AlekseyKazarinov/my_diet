@@ -5,7 +5,7 @@ import lombok.*;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;

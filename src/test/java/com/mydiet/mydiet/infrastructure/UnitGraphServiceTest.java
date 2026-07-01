@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +28,7 @@ class UnitGraphServiceTest {
 
     private static final Map<QuantityUnit, Double> conversionCoefs = Map.of(QuantityUnit.PIECE, 100.0, QuantityUnit.GRAM, 0.001);
 
-    @MockBean
+    @MockitoBean
     private ConversionUnitsService conversionUnitsService;
 
     @Autowired

@@ -7,10 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
-import static javax.persistence.FetchType.LAZY;
+import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Table(name = "CONVERSION_UNITS")

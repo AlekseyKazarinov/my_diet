@@ -8,7 +8,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.OnDelete;
 import org.springframework.context.annotation.DependsOn;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.List;
 import java.util.Set;
 

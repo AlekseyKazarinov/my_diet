@@ -9,7 +9,12 @@ import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import com.mydiet.mydiet.service.NutritionProgramConverterService;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +28,7 @@ import static com.mydiet.mydiet.domain.entity.Status.PUBLISHED;
 @RestController
 @RequestMapping("/app")
 @RequiredArgsConstructor
-@Api(tags = SwaggerConfig.APP_CONTROLLER_TAG)
+@Tag(name = SwaggerConfig.APP_CONTROLLER_TAG) // Заменено с @Api
 public class AppController {
 
     private final NutritionProgramRepository       nutritionProgramRepository;
@@ -31,11 +36,11 @@ public class AppController {
     private final ShoppingListService              shoppingListService;
 
     @GetMapping(path = "/nutrition-programs/{programNumber}")
-    @ApiOperation(value = "Get a Nutrition Program by Id")
+    @Operation(summary = "Get a Nutrition Program by Id") // Заменено с @ApiOperation
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgramAppContainer.class),
-            @ApiResponse(code = 404, message = "Nutrition Program not found", response = ErrorMessage.class),
-            @ApiResponse(code = 403, message = "Nutrition Program has not been published and App user does not have access", response = ErrorMessage.class)
+            @ApiResponse(responseCode = "200", description = "Nutrition Program received", content = @Content(schema = @Schema(implementation = NutritionProgramAppContainer.class))),
+            @ApiResponse(responseCode = "404", description = "Nutrition Program not found", content = @Content(schema = @Schema(implementation = ErrorMessage.class))),
+            @ApiResponse(responseCode = "403", description = "Nutrition Program has not been published and App user does not have access", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     public ResponseEntity<NutritionProgramAppContainer> getNutritionProgram(@PathVariable Long programNumber) {
         var programApp = nutritionProgramConverterService.getProgramConvertedIntoAppOutputFormat(programNumber);
@@ -44,10 +49,10 @@ public class AppController {
     }
 
     @GetMapping(path = "/nutrition-programs/{programName}")
-    @ApiOperation(value = "Get a Nutrition Program by Name")
+    @Operation(summary = "Get a Nutrition Program by Name")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgramAppContainer.class),
-            @ApiResponse(code = 204, message = "Nutrition Program does not exist")
+            @ApiResponse(responseCode = "200", description = "Nutrition Program received", content = @Content(schema = @Schema(implementation = NutritionProgramAppContainer.class))),
+            @ApiResponse(responseCode = "204", description = "Nutrition Program does not exist")
     })
     public ResponseEntity<NutritionProgramAppContainer> getNutritionProgramByName(@PathVariable String programName) {
         var programApp = nutritionProgramConverterService.getProgramConvertedIntoAppOutputFormat(programName);
@@ -57,10 +62,10 @@ public class AppController {
 
     // todo: use projections-based approach. See point 5: https://www.baeldung.com/spring-data-jpa-projections
     @GetMapping(path = "/nutrition-programs/previews")
-    @ApiOperation(value = "Get Nutrition Program previews", notes = "All parameters are optional. You can combine them in any way")
+    @Operation(summary = "Get Nutrition Program previews", description = "All parameters are optional. You can combine them in any way")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Nutrition Program previews received", response = NutritionProgramPreview[].class),
-            @ApiResponse(code = 204, message = "Nutrition Programs not found", response = ErrorMessage.class)
+            @ApiResponse(responseCode = "200", description = "Nutrition Program previews received", content = @Content(schema = @Schema(implementation = NutritionProgramPreview.class))),
+            @ApiResponse(responseCode = "204", description = "Nutrition Programs not found", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     public ResponseEntity<List<NutritionProgramPreview>> getNutritionProgram(
             @RequestParam(defaultValue = "RUSSIAN") Language language,
@@ -76,7 +81,7 @@ public class AppController {
         return programPreviews.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(programPreviews);
     }
 
-    @ApiOperation(value = "Get a Shopping List for Nutrition Program")
+    @Operation(summary = "Get a Shopping List for Nutrition Program")
     @GetMapping("/shopping-lists/{programNumber}")
     public ResponseEntity<ShoppingList> getShoppingListFor(@PathVariable Long programNumber) {
         var optionalShoppingList = shoppingListService.findShoppingListFor(programNumber);

@@ -2,11 +2,8 @@ package com.mydiet.mydiet.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.stereotype.Service;
-
-import javax.persistence.*;
-import java.util.List;
 import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;

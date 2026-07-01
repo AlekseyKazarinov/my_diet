@@ -6,7 +6,7 @@ import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.QuantityUnit;
 import org.springframework.data.repository.CrudRepository;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 

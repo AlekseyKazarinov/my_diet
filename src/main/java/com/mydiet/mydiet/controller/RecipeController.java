@@ -7,10 +7,12 @@ import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.service.RecipeService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +24,15 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/recipes")
 @RequiredArgsConstructor
-@Api(tags = "Recipes")
+@Tag(name = "Recipes") // Заменено с @Api(tags = ...)
 public class RecipeController {
 
     private final RecipeService recipeService;
 
-    @ApiOperation(value = "Create a new Recipe")
+    @Operation(summary = "Create a new Recipe") // Заменено с @ApiOperation
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Recipe created", response = Recipe.class),
-            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+            @ApiResponse(responseCode = "201", description = "Recipe created", content = @Content(schema = @Schema(implementation = Recipe.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping
     public ResponseEntity<Recipe> createRecipe(@RequestBody @NonNull RecipeInput recipeCreationInput) {
@@ -38,10 +40,10 @@ public class RecipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
     }
 
-    @ApiOperation(value = "Translate an existing Recipe")
+    @Operation(summary = "Translate an existing Recipe")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Recipe translated", response = Recipe.class),
-            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+            @ApiResponse(responseCode = "201", description = "Recipe translated", content = @Content(schema = @Schema(implementation = Recipe.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("{recipeId}/translate")
     public ResponseEntity<Recipe> translateRecipe(
@@ -52,9 +54,11 @@ public class RecipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(recipe);
     }
 
-    @ApiOperation(value = "Get a Recipe")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Recipe received", response = Recipe.class),
-                           @ApiResponse(code = 204, message = "There is no Recipe with that id", response = Object.class)})
+    @Operation(summary = "Get a Recipe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recipe received", content = @Content(schema = @Schema(implementation = Recipe.class))),
+            @ApiResponse(responseCode = "204", description = "There is no Recipe with that id") // Убран response = Object.class, так как для 204 тела ответа нет
+    })
     @GetMapping(path = "/{recipeId}")
     public ResponseEntity<Recipe> getRecipe(@PathVariable @NonNull Long recipeId) {
         var optionalRecipe = recipeService.findRecipeById(recipeId);
@@ -71,8 +75,10 @@ public class RecipeController {
      * This is very resource intensive endpoint
      * @return all recipes stored in the database
      */
-    @ApiOperation(value = "Get All Recipes (Use this endpoint judiciously, this endpoint is highly resource-consuming)")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "All Recipes received", response = Recipe[].class))
+    @Operation(summary = "Get All Recipes (Use this endpoint judiciously, this endpoint is highly resource-consuming)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "All Recipes received", content = @Content(schema = @Schema(implementation = Recipe.class))) // Recipe[].class заменено на Recipe.class
+    })
     @GetMapping(path = "/all")
     public ResponseEntity<List<Recipe>> getAllRecipes() {
         var recipeList = recipeService.findAllRecipes();
@@ -85,8 +91,10 @@ public class RecipeController {
         }
     }
 
-    @ApiOperation(value = "Get Recipes sorted by similarity in calories")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "All Sorted Recipes received", response = Recipe[].class))
+    @Operation(summary = "Get Recipes sorted by similarity in calories")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "All Sorted Recipes received", content = @Content(schema = @Schema(implementation = Recipe.class)))
+    })
     @GetMapping(path = "/sorted-by-calories")
     public ResponseEntity<List<Recipe>> getAllSortedRecipes(
             @RequestParam(defaultValue = "RUSSIAN") Language language,
@@ -111,8 +119,10 @@ public class RecipeController {
         return ResponseEntity.status(HttpStatus.OK).body(recipe);
     }
 
-    @ApiOperation(value = "Put an Image into a Recipe")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "Image created for Recipe", response = Image.class))
+    @Operation(summary = "Put an Image into a Recipe")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Image created for Recipe", content = @Content(schema = @Schema(implementation = Image.class)))
+    })
     @PutMapping("/{recipeId}/image")
     public ResponseEntity<Image> addImageToRecipe(@PathVariable @NonNull Long recipeId,
                                                   @RequestParam @NonNull String imageName,
@@ -151,5 +161,3 @@ PATCH /recipes/{recipeId}/name
      */
 
 }
-
-

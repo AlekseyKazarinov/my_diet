@@ -5,12 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mydiet.mydiet.infrastructure.Consistence;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import java.util.Set;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 @Entity
 @Table(name = "PRODUCT")

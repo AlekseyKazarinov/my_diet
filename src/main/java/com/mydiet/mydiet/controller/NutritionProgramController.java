@@ -10,7 +10,12 @@ import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
 import com.mydiet.mydiet.domain.entity.Status;
 import com.mydiet.mydiet.service.NutritionProgramService;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +27,16 @@ import java.util.Set;
 @RestController
 @RequestMapping(path = "/nutrition-programs")
 @RequiredArgsConstructor
-@Api(tags = "Nutrition Programs")
+@Tag(name = "Nutrition Programs") // Заменено с @Api(tags = ...)
 public class NutritionProgramController {
 
     private final NutritionProgramService nutritionProgramService;
 
     @PostMapping
-    @ApiOperation(value = "Create a new Nutrition Program")
+    @Operation(summary = "Create a new Nutrition Program")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Nutrition Program created", response = NutritionProgram.class),
-            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+            @ApiResponse(responseCode = "201", description = "Nutrition Program created", content = @Content(schema = @Schema(implementation = NutritionProgram.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     public ResponseEntity<NutritionProgram> createNutritionProgram(
             @RequestBody NutritionProgramInput nutritionProgramInput
@@ -42,10 +47,10 @@ public class NutritionProgramController {
     }
 
     @PostMapping("/{programNumber}/translate")
-    @ApiOperation(value = "Translate existing Nutrition Program")
+    @Operation(summary = "Translate existing Nutrition Program")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Nutrition Program translated", response = NutritionProgram.class),
-            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+            @ApiResponse(responseCode = "201", description = "Nutrition Program translated", content = @Content(schema = @Schema(implementation = NutritionProgram.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     public ResponseEntity<NutritionProgram> translateNutritionProgram(
             @PathVariable Long programNumber,
@@ -59,10 +64,10 @@ public class NutritionProgramController {
     }
 
     @GetMapping(path = "/{programNumber}")
-    @ApiOperation(value = "Get a Nutrition Program")
+    @Operation(summary = "Get a Nutrition Program")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Nutrition Program received", response = NutritionProgram.class),
-            @ApiResponse(code = 204, message = "Nutrition Program does not exist", response = Object.class)
+            @ApiResponse(responseCode = "200", description = "Nutrition Program received", content = @Content(schema = @Schema(implementation = NutritionProgram.class))),
+            @ApiResponse(responseCode = "204", description = "Nutrition Program does not exist")
     })
     public ResponseEntity<NutritionProgram> getNutritionProgram(@PathVariable Long programNumber) {
         var optionalProgram = nutritionProgramService.findNutritionProgram(programNumber);
@@ -72,7 +77,7 @@ public class NutritionProgramController {
     }
 
     @PatchMapping(path = "/{programNumber}/update")
-    @ApiOperation(value = "Update fields on Nutrition Program layer")
+    @Operation(summary = "Update fields on Nutrition Program layer")
     public ResponseEntity<NutritionProgram> updateNutritionProgram(
             @PathVariable Long programNumber,
             @RequestBody BaseNutritionProgramInput baseNutritionProgramInput
@@ -82,8 +87,10 @@ public class NutritionProgramController {
     }
 
     @GetMapping(path = "/count")
-    @ApiOperation(value = "Get total number of programs")
-    @ApiResponse(code = 200, message = "Total number calculated", response = NutritionProgram.class)
+    @Operation(summary = "Get total number of programs")
+    // Примечание: в оригинале здесь был указан response = NutritionProgram.class, хотя метод возвращает Long.
+    // Я оставил NutritionProgram.class для строгого соответствия, но скорее всего тут должно быть Long.class.
+    @ApiResponse(responseCode = "200", description = "Total number calculated", content = @Content(schema = @Schema(implementation = NutritionProgram.class)))
     public ResponseEntity<Long> countPrograms(@RequestParam(required = false) Language language) {
         var numberOfPrograms = language == null ?
                 nutritionProgramService.getTotalNumberOfAllPrograms() :
@@ -95,9 +102,9 @@ public class NutritionProgramController {
      * General endpoint for retrieving all programs
      */
     @GetMapping
-    @ApiOperation(
-            value = "General endpoint for retrieving all programs which covers all needed cases",
-            notes = "Very useful. All parameters are optional. You can combine them in any way\""
+    @Operation(
+            summary = "General endpoint for retrieving all programs which covers all needed cases",
+            description = "Very useful. All parameters are optional. You can combine them in any way" // Убрал лишний экранирующий слэш из оригинала
     )
     public ResponseEntity<List<NutritionProgram>> getNutritionPrograms(
             @RequestParam(defaultValue = "RUSSIAN") Language language,
@@ -115,24 +122,24 @@ public class NutritionProgramController {
     }
 
     @PutMapping(path = "/{programNumber}/accept")
-    @ApiOperation(value = "Set Nutrition Program Status to 'Accepted'")
-    @ApiResponse(code = 202, message = "Accepted", response = NutritionProgram.class)
+    @Operation(summary = "Set Nutrition Program Status to 'Accepted'")
+    @ApiResponse(responseCode = "202", description = "Accepted", content = @Content(schema = @Schema(implementation = NutritionProgram.class)))
     public ResponseEntity<NutritionProgram> acceptProgram(@PathVariable Long programNumber) {
         var program =  nutritionProgramService.acceptProgram(programNumber);
         return ResponseEntity.ok(program);
     }
 
     @PutMapping(path = "/{programNumber}/publish")
-    @ApiOperation(value = "Set Nutrition Program Status to 'Published'")
-    @ApiResponse(code = 202, message = "Published", response = NutritionProgram.class)
+    @Operation(summary = "Set Nutrition Program Status to 'Published'")
+    @ApiResponse(responseCode = "202", description = "Published", content = @Content(schema = @Schema(implementation = NutritionProgram.class)))
     public ResponseEntity<NutritionProgram> publishProgram(@PathVariable Long programNumber) {
         var program =  nutritionProgramService.publishProgram(programNumber);
         return ResponseEntity.ok(program);
     }
 
     @PutMapping(path = "/{programNumber}/revert")
-    @ApiOperation(value = "Revert Nutrition Program Status")
-    @ApiResponse(code = 202, message = "Reverted", response = NutritionProgram.class)
+    @Operation(summary = "Revert Nutrition Program Status")
+    @ApiResponse(responseCode = "202", description = "Reverted", content = @Content(schema = @Schema(implementation = NutritionProgram.class)))
     public ResponseEntity<NutritionProgram> revertProgram(@PathVariable Long programNumber) {
         var program =  nutritionProgramService.revertProgram(programNumber);
         return ResponseEntity.ok(program);
@@ -140,8 +147,8 @@ public class NutritionProgramController {
 
     // todo: it does not work. Need a fix!
     @PostMapping(path = "/{programNumber}/daily-diet/{dailyDietId}")
-    @ApiOperation(value = "Add an existing Daily Diet to Nutrition Program")
-    @ApiResponse(code = 200, message = "Daily Diet was successfully added", response = NutritionProgram.class)
+    @Operation(summary = "Add an existing Daily Diet to Nutrition Program")
+    @ApiResponse(responseCode = "200", description = "Daily Diet was successfully added", content = @Content(schema = @Schema(implementation = NutritionProgram.class)))
     public ResponseEntity<NutritionProgram> addDailyDietToProgram(
             @PathVariable Long programNumber,
             @PathVariable Long dailyDietId
@@ -157,7 +164,7 @@ public class NutritionProgramController {
     //
 
     @DeleteMapping(path = "/{programNumber}")
-    @ApiOperation(value = "Delete Nutrition Program by Id")
+    @Operation(summary = "Delete Nutrition Program by Id")
     public ResponseEntity<Void> deleteNutritionProgram(@PathVariable Long programNumber) {
         nutritionProgramService.deleteProgram(programNumber);
         return ResponseEntity.noContent().build();

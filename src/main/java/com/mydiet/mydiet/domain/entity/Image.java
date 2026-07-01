@@ -1,10 +1,8 @@
 package com.mydiet.mydiet.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 
 @Entity

@@ -3,8 +3,8 @@ package com.mydiet.mydiet.controller;
 import com.mydiet.mydiet.domain.entity.ShoppingList;
 import com.mydiet.mydiet.domain.entity.WeekList;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +15,12 @@ import java.util.Optional;
 @RestController
 @RequestMapping(path = "/shopping-lists")
 @RequiredArgsConstructor
-@Api(tags = "Shopping Lists")
+@Tag(name = "Shopping Lists") // Заменено с @Api(tags = ...)
 public class ShoppingListController {
 
     private final ShoppingListService shoppingListService;
 
-    @ApiOperation(value = "Get a Shopping List for Nutrition Program")
+    @Operation(summary = "Get a Shopping List for Nutrition Program") // Заменено с @ApiOperation
     @GetMapping("/{programNumber}")
     public ResponseEntity<ShoppingList> getShoppingListFor(@PathVariable Long programNumber) {
         var optionalShoppingList = shoppingListService.findShoppingListFor(programNumber);
@@ -29,7 +29,7 @@ public class ShoppingListController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
-    @ApiOperation(value = "Get a weekly Shopping List for Nutrition Program")
+    @Operation(summary = "Get a weekly Shopping List for Nutrition Program")
     @GetMapping("/{programNumber}/weeks/{weekNumber}")
     public ResponseEntity<WeekList> getWeekShoppingList(@PathVariable Long programNumber,
                                                         @PathVariable Integer weekNumber
@@ -40,7 +40,7 @@ public class ShoppingListController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
-    @ApiOperation(value = "Update Shopping List for an Nutrition Program")
+    @Operation(summary = "Update Shopping List for an Nutrition Program")
     @PutMapping("/{programNumber}/weeks/{weekNumber}")
     public ResponseEntity<ShoppingList> updateShoppingList(
             @PathVariable Long programNumber,
@@ -51,7 +51,7 @@ public class ShoppingListController {
         return ResponseEntity.ok(shoppingList);
     }
 
-    @ApiOperation(value = "Update Shopping List for an Nutrition Program")
+    @Operation(summary = "Update Shopping List for an Nutrition Program")
     @PutMapping("/{programNumber}")
     public ResponseEntity<String> updateShoppingList(
             @PathVariable Long programNumber,

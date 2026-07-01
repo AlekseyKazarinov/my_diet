@@ -2,9 +2,8 @@ package com.mydiet.mydiet.domain.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Entity

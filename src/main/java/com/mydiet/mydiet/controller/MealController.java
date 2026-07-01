@@ -6,7 +6,12 @@ import com.mydiet.mydiet.domain.dto.input.MealInputShortened;
 import com.mydiet.mydiet.domain.entity.FoodTime;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.service.MealService;
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,18 +19,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/meals")
 @RequiredArgsConstructor
-@Api(tags = "Meals")
+@Tag(name = "Meals") // Заменено с @Api(tags = ...)
 public class MealController {
 
     private final MealService mealService;
 
     @PostMapping("/shortened-input")
-    @ApiOperation(value = "Create a new Meal with RecipeId")
+    @Operation(summary = "Create a new Meal with RecipeId")
     public ResponseEntity<Meal> createMeal(@RequestBody MealInputShortened mealInputShortened) {
         var meal = mealService.createValidatedMealByShortenedInput(mealInputShortened);
 
@@ -33,10 +37,10 @@ public class MealController {
     }
 
     @PostMapping
-    @ApiOperation(value = "Create a new Meal with entire Recipe")
+    @Operation(summary = "Create a new Meal with entire Recipe")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Meal created", response = Meal.class),
-            @ApiResponse(code = 400, message = "Validation error", response = ErrorMessage.class)
+            @ApiResponse(responseCode = "201", description = "Meal created", content = @Content(schema = @Schema(implementation = Meal.class))),
+            @ApiResponse(responseCode = "400", description = "Validation error", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     public ResponseEntity<Meal> createMeal(@RequestBody @NonNull MealInput mealCreationInput) {
         var meal = mealService.createValidatedMeal(mealCreationInput);
@@ -44,10 +48,10 @@ public class MealController {
     }
 
     @GetMapping("/{mealId}")
-    @ApiOperation(value = "Get a Meal")
+    @Operation(summary = "Get a Meal")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Meal received", response = Meal.class),
-            @ApiResponse(code = 204, message = "Meal does not exist", response = Object.class)
+            @ApiResponse(responseCode = "200", description = "Meal received", content = @Content(schema = @Schema(implementation = Meal.class))),
+            @ApiResponse(responseCode = "204", description = "Meal does not exist")
     })
     public ResponseEntity<Meal> getMeal(@PathVariable Long mealId) {
         return mealService.findMealById(mealId).map(ResponseEntity::ok)
@@ -55,8 +59,10 @@ public class MealController {
     }
 
     @PutMapping("/{mealId}/update")
-    @ApiOperation(value = "Update a Meal")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "Meal updated", response = Meal.class))
+    @Operation(summary = "Update a Meal")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Meal updated", content = @Content(schema = @Schema(implementation = Meal.class)))
+    })
     public ResponseEntity<Meal> updateMeal(@PathVariable @NonNull Long mealId,
                                            @RequestBody @NonNull MealInput mealUpdateInput) {
         var meal = mealService.updateValidatedMeal(mealId, mealUpdateInput);
@@ -64,26 +70,30 @@ public class MealController {
     }
 
     @PatchMapping("/{mealId}/recipe/{recipeId}")
-    @ApiOperation(value = "Set Recipe for Meal")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "Recipe is set for Meal", response = Meal.class))
+    @Operation(summary = "Set Recipe for Meal")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recipe is set for Meal", content = @Content(schema = @Schema(implementation = Meal.class)))
+    })
     public ResponseEntity<Meal> setRecipeForMeal(@PathVariable Long mealId, @PathVariable Long recipeId) {
         var meal = mealService.setRecipeForMeal(mealId, recipeId);
         return ResponseEntity.status(HttpStatus.OK).body(meal);
     }
 
     @PatchMapping("/{mealId}/food-time/{foodTime}")
-    @ApiOperation(value = "Set new FoodTime for Meal")
-    @ApiResponses(value = @ApiResponse(code = 200, message = "new FoodTime is set for Meal", response = Meal.class))
+    @Operation(summary = "Set new FoodTime for Meal")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "new FoodTime is set for Meal", content = @Content(schema = @Schema(implementation = Meal.class)))
+    })
     public ResponseEntity<Meal> setFoodTimeForMeal(@PathVariable Long mealId, @PathVariable String foodTime) {
         var meal = mealService.setFoodTimeForMeal(mealId, foodTime);
         return ResponseEntity.status(HttpStatus.OK).body(meal);
     }
 
     @GetMapping("/all")
-    @ApiOperation(value = "Get all existing Meals")
+    @Operation(summary = "Get all existing Meals")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All Meals are received", response = Meal[].class),
-            @ApiResponse(code = 204, message = "There are no existing Meals", response = Object.class)
+            @ApiResponse(responseCode = "200", description = "All Meals are received", content = @Content(schema = @Schema(implementation = Meal.class))),
+            @ApiResponse(responseCode = "204", description = "There are no existing Meals")
     })
     public ResponseEntity<List<Meal>> getAllExistingMeals() {
         var listOfMeals = mealService.findAllMeals();
@@ -97,10 +107,10 @@ public class MealController {
     }
 
     @GetMapping("/food-time/{foodTime}")
-    @ApiOperation(value = "Get all Meals by FoodTime")
+    @Operation(summary = "Get all Meals by FoodTime")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All Meals for this FoodTime are received",response = Meal[].class),
-            @ApiResponse(code = 204, message = "There are no Meals for that FoodTime", response = Object.class)
+            @ApiResponse(responseCode = "200", description = "All Meals for this FoodTime are received", content = @Content(schema = @Schema(implementation = Meal.class))),
+            @ApiResponse(responseCode = "204", description = "There are no Meals for that FoodTime")
     })
     public ResponseEntity<List<Meal>> getAllMealsByFoodTime(@PathVariable String foodTime) {
         var listOfMeals = mealService.getMealsByFoodTime(foodTime);
@@ -114,10 +124,10 @@ public class MealController {
     }
 
     @GetMapping
-    @ApiOperation(value = "Get Meals by FoodTime and Kcal within a selected range")
+    @Operation(summary = "Get Meals by FoodTime and Kcal within a selected range")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "All Meals are received", response = Meal[].class),
-            @ApiResponse(code = 204, message = "There are no existing Meals", response = Object.class)
+            @ApiResponse(responseCode = "200", description = "All Meals are received", content = @Content(schema = @Schema(implementation = Meal.class))),
+            @ApiResponse(responseCode = "204", description = "There are no existing Meals")
     })
     public ResponseEntity<List<Meal>> getMealsByFoodTimeWithinRange(
             @RequestParam FoodTime foodTime,
@@ -135,9 +145,9 @@ public class MealController {
     }
 
     @DeleteMapping("/{mealId}")
-    @ApiOperation(value = "Delete a Meal by Id")
+    @Operation(summary = "Delete a Meal by Id")
     @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "Meal deleted", response = Object.class)
+            @ApiResponse(responseCode = "204", description = "Meal deleted")
     })
     public ResponseEntity<Void> deleteMeal(@PathVariable Long mealId) {
         mealService.deleteMeal(mealId);

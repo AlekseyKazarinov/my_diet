@@ -5,15 +5,15 @@ import com.mydiet.mydiet.domain.entity.DailyDiet;
 import com.mydiet.mydiet.domain.entity.Meal;
 import lombok.RequiredArgsConstructor;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.Optional;
 import java.util.Set;
 
 @RequiredArgsConstructor
 public class DailyDietRepositoryImpl implements DailyDietRepositoryCustom {
 
-    private final DailyDietRepository dailyDietRepository;
+    //private final DailyDietRepository dailyDietRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -35,8 +35,9 @@ public class DailyDietRepositoryImpl implements DailyDietRepositoryCustom {
             return Optional.empty();
         }
 
-        var id =((Number) dailyDietId).longValue();
+        var id = ((Number) dailyDietId).longValue();
 
-        return dailyDietRepository.findById(id);
+        DailyDiet dailyDiet = entityManager.find(DailyDiet.class, id);
+        return Optional.ofNullable(dailyDiet);
     }
 }
