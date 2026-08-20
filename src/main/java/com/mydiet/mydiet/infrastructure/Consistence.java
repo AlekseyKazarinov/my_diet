@@ -21,7 +21,7 @@ public enum Consistence {
     private final String description;
 
     private static final Set<String> consistenceNames = Arrays.stream(Consistence.values())
-            .flatMap(c -> Stream.of(c.name(), c.description))
+            .flatMap(c -> Stream.of(c.name().toLowerCase(), c.description))
             .collect(Collectors.toSet());
 
     public static Consistence of(String name) {
@@ -40,7 +40,7 @@ public enum Consistence {
     }
 
     private static boolean isValidConsistence(String name) {
-        return consistenceNames.contains(name);
+        return consistenceNames.contains(name.toLowerCase());
     }
 
     public static void validateConsistence(String name) {

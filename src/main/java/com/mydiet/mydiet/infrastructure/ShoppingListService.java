@@ -6,6 +6,7 @@ import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.repository.ShoppingListRepository;
 import com.mydiet.mydiet.service.NutritionProgramStorageService;
 import com.mydiet.mydiet.service.Utils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ public class ShoppingListService {
         return shoppingList.getListForWeekNo(weekNumber);
     }
 
+    @Transactional
     public void replaceShoppingListFor(Long programNumber, ShoppingList shoppingList) {
         var program = programStorageService.getProgramOrElseThrow(programNumber);
 
@@ -54,6 +56,7 @@ public class ShoppingListService {
         shoppingListRepository.save(shoppingList);
     }
 
+    @Transactional
     public ShoppingList replaceWeekInShoppingListFor(Long programNumber, Integer weekNumber, WeekList weekList) {
         Utils.validateVariableIsNonNegative(weekNumber, "weekNumber");
 

@@ -5,7 +5,6 @@ import com.mydiet.mydiet.domain.dto.output.android.*;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
-import com.mydiet.mydiet.domain.entity.Status;
 import com.mydiet.mydiet.domain.exception.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ import static com.mydiet.mydiet.domain.entity.Status.PUBLISHED;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NutritionProgramConverterService {
+public class NutritionProgramToPreviewConverterService {
 
     private final NutritionProgramStorageService programStorageService;
     private final NutritionProgramService programService;

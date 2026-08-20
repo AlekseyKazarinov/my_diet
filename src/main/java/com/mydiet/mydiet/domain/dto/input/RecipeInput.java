@@ -1,7 +1,5 @@
 package com.mydiet.mydiet.domain.dto.input;
 
-import com.mydiet.mydiet.domain.dto.input.ImageCreationInput;
-import com.mydiet.mydiet.domain.dto.input.IngredientInput;
 import com.mydiet.mydiet.domain.entity.FoodCategory;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
@@ -25,7 +23,7 @@ public class RecipeInput {
     private Language language;
 
     private List<IngredientInput> ingredients;
-    private ImageCreationInput    image;
+    private ImageInput image;
 
     private Double totalKcal;
     private Double totalProteins;

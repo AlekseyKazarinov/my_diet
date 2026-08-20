@@ -9,16 +9,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.mydiet.mydiet.domain.entity.Lifestyle.NOT_SPECIFIED;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PrepareDataRunner implements CommandLineRunner {
 
+    private final NutritionProgramRepository nutritionProgramRepository;
     private final DailyDietRepository  dailyDietRepository;
     private final MealRepository       mealRepository;
     private final RecipeRepository     recipeRepository;
@@ -31,7 +33,6 @@ public class PrepareDataRunner implements CommandLineRunner {
 
         log.info("Data preparation finished.");
     }
-
 
     private void saveDailyDietWithMealIds() {
         var product = Product.builder()
@@ -90,5 +91,15 @@ public class PrepareDataRunner implements CommandLineRunner {
         var pr = productRepository.findById(1L).get();
 
         log.info("list of ingredients: {}", pr.getRelatedIngredients());
+
+        var nutritionProgram = NutritionProgram.builder()
+                .name("FISH")
+                .description("One day with fish")
+                .dailyDiets(List.of(dailyDiet))
+                .lifestyles(Set.of(NOT_SPECIFIED))
+                .status(Status.PUBLISHED)
+                .build();
+
+        nutritionProgramRepository.save(nutritionProgram);
     }
 }

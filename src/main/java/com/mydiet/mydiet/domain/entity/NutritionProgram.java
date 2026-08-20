@@ -60,7 +60,7 @@ public class NutritionProgram {
     private String lightColor;   // background color?   preview
 
     @ManyToMany
-    private List<DailyDiet> dailyDiets;  // as a user I want to ..?
+    private List<DailyDiet> dailyDiets;  // as a user I want to access daily diets from nutritional program
 
     private Short dailyNumberOfMeals;
 

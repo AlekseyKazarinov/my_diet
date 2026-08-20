@@ -1,6 +1,6 @@
 package com.mydiet.mydiet.service;
 
-import com.mydiet.mydiet.domain.dto.input.ImageCreationInput;
+import com.mydiet.mydiet.domain.dto.input.ImageInput;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.repository.ImageRepository;
@@ -36,11 +36,11 @@ public class ImageService {
                 );
     }
 
-    public Image updateImage(Long imageId, ImageCreationInput imageInput) {
-        var image = getImageOrThrow(imageId);
-
+    public Image updateImage(Long imageId, ImageInput imageInput) {
         Utils.validateTextFieldIsSet(imageInput.getResource(), "resource", imageInput);
         Utils.validateTextFieldIsSet(imageInput.getName(), "name", imageInput);
+
+        var image = getImageOrThrow(imageId);
 
         image.setName(imageInput.getName());
         image.setResource(imageInput.getResource());
@@ -48,7 +48,7 @@ public class ImageService {
         return saveImage(image);
     }
 
-    public Image mapToImage(ImageCreationInput imageInput) {
+    public Image mapToImage(ImageInput imageInput) {
         Utils.validateTextFieldIsSet(imageInput.getResource(), "resource", imageInput);
         return Image.builder()
                 .name(imageInput.getName())
