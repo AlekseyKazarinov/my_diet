@@ -7,8 +7,7 @@ import com.mydiet.mydiet.domain.dto.output.android.NutritionProgramAppContainer;
 import com.mydiet.mydiet.domain.dto.output.android.NutritionProgramPreview;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
-import com.mydiet.mydiet.repository.NutritionProgramRepository;
-import com.mydiet.mydiet.service.NutritionProgramConverterService;
+import com.mydiet.mydiet.service.NutritionProgramToPreviewConverterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,16 +22,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
-import static com.mydiet.mydiet.domain.entity.Status.PUBLISHED;
-
 @RestController
 @RequestMapping("/app")
 @RequiredArgsConstructor
-@Tag(name = SwaggerConfig.APP_CONTROLLER_TAG) // Заменено с @Api
+@Tag(name = SwaggerConfig.APP_CONTROLLER_TAG, description = "This controller is aimed to handle Android application requests") // Заменено с @Api
 public class AppController {
 
-    private final NutritionProgramRepository       nutritionProgramRepository;
-    private final NutritionProgramConverterService nutritionProgramConverterService;
+    private final NutritionProgramToPreviewConverterService nutritionProgramToPreviewConverterService;
     private final ShoppingListService              shoppingListService;
 
     @GetMapping(path = "/nutrition-programs/{programNumber}")
@@ -43,7 +39,7 @@ public class AppController {
             @ApiResponse(responseCode = "403", description = "Nutrition Program has not been published and App user does not have access", content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     public ResponseEntity<NutritionProgramAppContainer> getNutritionProgram(@PathVariable Long programNumber) {
-        var programApp = nutritionProgramConverterService.getProgramConvertedIntoAppOutputFormat(programNumber);
+        var programApp = nutritionProgramToPreviewConverterService.getProgramConvertedIntoAppOutputFormat(programNumber);
 
         return ResponseEntity.ok(programApp);
     }
@@ -55,7 +51,7 @@ public class AppController {
             @ApiResponse(responseCode = "204", description = "Nutrition Program does not exist")
     })
     public ResponseEntity<NutritionProgramAppContainer> getNutritionProgramByName(@PathVariable String programName) {
-        var programApp = nutritionProgramConverterService.getProgramConvertedIntoAppOutputFormat(programName);
+        var programApp = nutritionProgramToPreviewConverterService.getProgramConvertedIntoAppOutputFormat(programName);
 
         return ResponseEntity.ok(programApp);
     }
@@ -75,7 +71,7 @@ public class AppController {
             @RequestParam(defaultValue = "5", required = false) Integer maxNumber,
             @RequestBody(required = false) ProductExclusion productExclusion
     ) {
-        var programPreviews = nutritionProgramConverterService.getProgramPreviewsBy(
+        var programPreviews = nutritionProgramToPreviewConverterService.getProgramPreviewsBy(
                 language, kcal, delta, lifestyles, productExclusion, maxNumber
         );
         return programPreviews.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(programPreviews);

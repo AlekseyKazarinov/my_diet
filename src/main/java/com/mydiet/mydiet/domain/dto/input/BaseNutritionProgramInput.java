@@ -12,7 +12,7 @@ public class BaseNutritionProgramInput {
     private String description;
     private String additionalInfo;
 
-    private String image;
+    private ImageInput image;
     //private String backgroundColour; // todo: delete this field?
 
     private String dayColor;

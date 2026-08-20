@@ -9,10 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -31,7 +29,6 @@ public class PrepareDataRunner implements CommandLineRunner {
 
         log.info("Data preparation finished.");
     }
-
 
     private void saveDailyDietWithMealIds() {
         var product = Product.builder()

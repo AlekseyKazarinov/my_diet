@@ -1,14 +1,10 @@
 package com.mydiet.mydiet.service;
 
 import com.google.common.collect.Sets;
-import com.mydiet.mydiet.domain.dto.input.BaseNutritionProgramInput;
-import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
-import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
-import com.mydiet.mydiet.domain.dto.input.ProgramTranslationInput;
+import com.mydiet.mydiet.domain.dto.input.*;
 import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.BadRequestException;
-import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.infrastructure.ShoppingListService;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
@@ -44,7 +40,7 @@ public class NutritionProgramService {
     private final ShoppingListService shoppingListService;
     private final ShoppingListRepository shoppingListRepository;
     private final NutritionProgramStorageService programStorageService;
-    private final RecipeService recipeService;
+    private final ImageService imageService;
 
     public NutritionProgram createValidatedNutritionProgram(NutritionProgramInput programCreationInput) {
         validateNutritionProgramInput(programCreationInput);
@@ -232,9 +228,23 @@ public class NutritionProgramService {
         Optional.ofNullable(baseNutritionProgramInput.getLightColor()).ifPresent(program::setLightColor);
         Optional.ofNullable(baseNutritionProgramInput.getDayColor()).ifPresent(program::setDayColor);
         Optional.ofNullable(baseNutritionProgramInput.getMainColor()).ifPresent(program::setMainColor);
-        Optional.ofNullable(baseNutritionProgramInput.getImage()).ifPresent(baseNutritionProgramInput::setImage);
+
+        updateImage(program, baseNutritionProgramInput.getImage());
 
         return nutritionProgramRepository.save(program);
+    }
+
+    private void updateImage(NutritionProgram program, ImageInput imageUpdateInput) {
+        if (imageUpdateInput != null) {
+            if (program.getImage() != null) {
+                var updatedImage = imageService.updateImage(program.getImage().getId(), imageUpdateInput);
+                program.setImage(updatedImage);
+
+            } else {
+                var createdImage = imageService.createValidatedImage(imageUpdateInput.getName(), imageUpdateInput.getResource());
+                program.setImage(createdImage);
+            }
+        }
     }
 
     public Optional<NutritionProgram> findNutritionProgram(Long programNumber) {

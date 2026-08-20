@@ -9,7 +9,9 @@ public enum Lifestyle {
     VEGAN("веган"),
     DIABETIC("диабетик"),
     LACTOSE_INTOLERANCE("непереносящий лактозу"),
-    GLUTEN_FREE("без глютена");
+    GLUTEN_FREE("без глютена"),
+
+    NOT_SPECIFIED("Без ограничений");
 
     private final String description;
 

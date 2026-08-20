@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.service;
 
+import com.mydiet.mydiet.domain.dto.input.ImageInput;
 import com.mydiet.mydiet.domain.dto.input.RecipeInput;
 import com.mydiet.mydiet.domain.dto.input.RecipeTranslationInput;
 import com.mydiet.mydiet.domain.entity.Image;
@@ -136,21 +137,21 @@ public class RecipeService {
 
     public Recipe updateRecipe(Long recipeId, RecipeInput recipeUpdateInput) {
         var recipe = getRecipeOrElseThrow(recipeId);
-        recipe.setName(recipeUpdateInput.getName());
-        recipe.setDescription(recipeUpdateInput.getDescription());
+
+        Optional.ofNullable(recipeUpdateInput.getName()).ifPresent(recipe::setName);
+        Optional.ofNullable(recipeUpdateInput.getDescription()).ifPresent(recipe::setDescription);
+
         recipe.setLanguage(Optional.ofNullable(recipeUpdateInput.getLanguage()).orElse(Language.RUSSIAN));
-        recipe.setFoodCategory(recipeUpdateInput.getFoodCategory());
-        recipe.setLifestyles(recipeUpdateInput.getLifestyles());
 
-        if (recipe.getImage() != null) {
-            var updatedImage = imageService.updateImage(recipe.getImage().getId(), recipeUpdateInput.getImage());
-            recipe.setImage(updatedImage);
-        }
+        Optional.ofNullable(recipeUpdateInput.getFoodCategory()).ifPresent(recipe::setFoodCategory);
+        Optional.ofNullable(recipeUpdateInput.getLifestyles()).ifPresent(recipe::setLifestyles);
 
-        recipe.setTotalKcal(recipeUpdateInput.getTotalKcal());
-        recipe.setTotalProteins(recipeUpdateInput.getTotalProteins());
-        recipe.setTotalCarbohydrates(recipeUpdateInput.getTotalCarbohydrates());
-        recipe.setTotalFats(recipeUpdateInput.getTotalFats());
+        updateImage(recipe, recipeUpdateInput.getImage());
+
+        Optional.ofNullable(recipeUpdateInput.getTotalKcal()).ifPresent(recipe::setTotalKcal);
+        Optional.ofNullable(recipeUpdateInput.getTotalProteins()).ifPresent(recipe::setTotalProteins);
+        Optional.ofNullable(recipeUpdateInput.getTotalCarbohydrates()).ifPresent(recipe::setTotalCarbohydrates);
+        Optional.ofNullable(recipeUpdateInput.getTotalFats()).ifPresent(recipe::setTotalFats);
 
         // replace all ingredients
         var ingredients = new ArrayList<Ingredient>();
@@ -163,6 +164,20 @@ public class RecipeService {
         recipe = recipeRepository.save(recipe);
         ingredientService.removeIngredientsWithIds(originalIngredientIds); // is it working?
         return recipe;
+    }
+
+    private void updateImage(Recipe recipe, ImageInput imageUpdateInput){
+        if (imageUpdateInput != null) {
+            if (recipe.getImage() != null) {
+                var updatedImage = imageService.updateImage(recipe.getImage().getId(), imageUpdateInput);
+                recipe.setImage(updatedImage);
+            }
+
+            else {
+                var createdImage = imageService.createValidatedImage(imageUpdateInput.getName(), imageUpdateInput.getResource());
+                recipe.setImage(createdImage);
+            }
+        }
     }
 
     //todo: move to repository layer

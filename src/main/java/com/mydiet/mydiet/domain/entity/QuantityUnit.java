@@ -17,7 +17,7 @@ public enum QuantityUnit {
 
     KILOGRAM            (Set.of(SOLID)),
     GRAM                (Set.of(SOLID)),
-    MILLILITER          (Set.of(SOLID)),
+    MILLILITER          (Set.of(LIQUID)),
     LITER               (Set.of(LIQUID)),
     TEASPOON            (Set.of(SOLID, LIQUID)),
     HEAPED_TEASPOON     (Set.of(SOLID)),
