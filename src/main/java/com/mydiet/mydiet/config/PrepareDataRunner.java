@@ -3,6 +3,7 @@ package com.mydiet.mydiet.config;
 import com.google.common.collect.Lists;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.infrastructure.Consistence;
+import com.mydiet.mydiet.service.ShoppingListService;
 import com.mydiet.mydiet.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import static com.mydiet.mydiet.domain.entity.Lifestyle.NOT_SPECIFIED;
 @RequiredArgsConstructor
 public class PrepareDataRunner implements CommandLineRunner {
 
+    private final ShoppingListService shoppingListService;
     private final NutritionProgramRepository nutritionProgramRepository;
     private final DailyDietRepository  dailyDietRepository;
     private final MealRepository       mealRepository;
@@ -82,7 +84,6 @@ public class PrepareDataRunner implements CommandLineRunner {
         meal.setFoodTime(FoodTime.NIGHT_SNACK);
         mealRepository.save(meal);
 
-
         var dailyDiet = new DailyDiet();
         dailyDiet.setMeals(listOfMeals);
         dailyDiet.setName("fish diet");
@@ -101,5 +102,8 @@ public class PrepareDataRunner implements CommandLineRunner {
                 .build();
 
         nutritionProgramRepository.save(nutritionProgram);
+
+        shoppingListService.generateShoppingListFor(nutritionProgram);
+
     }
 }

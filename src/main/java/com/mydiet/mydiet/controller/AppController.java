@@ -6,7 +6,7 @@ import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
 import com.mydiet.mydiet.domain.dto.output.android.NutritionProgramAppContainer;
 import com.mydiet.mydiet.domain.dto.output.android.NutritionProgramPreview;
 import com.mydiet.mydiet.domain.entity.*;
-import com.mydiet.mydiet.infrastructure.ShoppingListService;
+import com.mydiet.mydiet.service.ShoppingListService;
 import com.mydiet.mydiet.service.NutritionProgramToPreviewConverterService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

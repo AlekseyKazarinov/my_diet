@@ -19,7 +19,7 @@ public class ProductRowsForType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ElementCollection
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     private List<ProductRow> productRows = new ArrayList<>();
 
     public ProductRowsForType(List<ProductRow> productRows) {

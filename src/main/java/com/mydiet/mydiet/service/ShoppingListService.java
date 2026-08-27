@@ -1,11 +1,10 @@
-package com.mydiet.mydiet.infrastructure;
+package com.mydiet.mydiet.service;
 
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.BadRequestException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
+import com.mydiet.mydiet.infrastructure.UnitGraphService;
 import com.mydiet.mydiet.repository.ShoppingListRepository;
-import com.mydiet.mydiet.service.NutritionProgramStorageService;
-import com.mydiet.mydiet.service.Utils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +51,8 @@ public class ShoppingListService {
         throwIfStatusIsIn(program, DRAFT, PUBLISHED);
 
         shoppingListRepository.deleteById(programNumber);
-        shoppingList.setProgram(program);
+        shoppingList.setNutritionProgramNumber(program.getNumber());
+        //shoppingList.setProgram(program);
         shoppingListRepository.save(shoppingList);
     }
 
@@ -83,7 +83,7 @@ public class ShoppingListService {
     /**
      * Generates all weekly shopping lists for nutrition program
      * @param nutritionProgram a program for which the list to be created
-     * @return
+     * @return ShoppingList
      */
    public ShoppingList generateShoppingListFor(NutritionProgram nutritionProgram) {
        shoppingListRepository.deleteById(nutritionProgram.getNumber());
@@ -98,6 +98,7 @@ public class ShoppingListService {
            shoppingList.getListsByWeek().add(weekList);
        }
 
+       shoppingList.setNutritionProgramNumber(nutritionProgram.getNumber());
        shoppingList.setProgram(nutritionProgram);
 
        return shoppingListRepository.save(shoppingList);

@@ -4,6 +4,7 @@ import com.mydiet.mydiet.domain.entity.FoodCategory;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Getter
 public class RecipeInput {
 

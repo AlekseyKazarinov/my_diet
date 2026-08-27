@@ -3,7 +3,6 @@ package com.mydiet.mydiet.service;
 import com.google.common.base.Preconditions;
 import com.mydiet.mydiet.domain.dto.input.IngredientInput;
 import com.mydiet.mydiet.domain.entity.Ingredient;
-import com.mydiet.mydiet.domain.entity.QuantityUnit;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.event.SourceEntity;
 import com.mydiet.mydiet.repository.IngredientRepository;
@@ -20,6 +19,7 @@ public class IngredientService {
 
     private final ProductService       productService;
     private final IngredientRepository ingredientRepository;
+    private final IngredientStorageService ingredientStorageService;
     private final DomainEventPublisher domainEventPublisher;
 
     public void validateIngredientInput(IngredientInput ingredient) {
@@ -40,20 +40,7 @@ public class IngredientService {
                 .totalQuantity(ingredientCreationInput.getTotalQuantity())
                 .build();
 
-        return saveIfOriginal(ingredient);
-    }
-
-    private Ingredient saveIfOriginal(Ingredient ingredient) {
-        var optionalStoredIngredient = ingredientRepository.findByProductAndTotalQuantityAndUnit(
-                ingredient.getProduct(), ingredient.getTotalQuantity(), ingredient.getUnit()
-        );
-
-        if (optionalStoredIngredient.isPresent()) {
-            log.info("ingredient {} is already exist", ingredient.getProduct());
-            return optionalStoredIngredient.get();
-        }
-
-        return ingredientRepository.save(ingredient);
+        return ingredientStorageService.saveIfOriginal(ingredient);
     }
 
     public Ingredient getIngredientOrThrow(Long ingredientId) {

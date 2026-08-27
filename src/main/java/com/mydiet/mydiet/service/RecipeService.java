@@ -31,6 +31,7 @@ public class RecipeService {
 
     private final IngredientService ingredientService;
     private final RecipeRepository recipeRepository;
+    private final RecipeStorageService recipeStorageService;
     private final ImageService imageService;
 
     @PersistenceContext
@@ -61,7 +62,7 @@ public class RecipeService {
                 .totalCarbohydrates(recipeCreationInput.getTotalCarbohydrates())
                 .build();
 
-        return saveIfOriginal(recipe);
+        return recipeStorageService.saveIfOriginal(recipe);
     }
 
     public Recipe translateValidatedRecipe(Long recipeId, RecipeTranslationInput recipeTranslationInput) {
@@ -100,19 +101,6 @@ public class RecipeService {
         return recipeRepository.findRecipeByLangIdAndLanguage(
                 recipe.getLangId(), language
         );
-    }
-
-    private Recipe saveIfOriginal(Recipe recipe) {
-        try {
-            return recipeRepository.findOne(Example.of(recipe))
-                    .orElseGet(() -> recipeRepository.save(recipe));
-
-        } catch (Exception e) {
-            log.error("An error occurred when finding example of Recipe {}", recipe);
-            throw new GenericException("Failed when trying to find the same Recipe", e);
-        }
-        /*return recipeRepository.findRecipeByName(recipe.getName())
-                               .orElseGet(() -> recipeRepository.save(recipe));*/
     }
 
     public List<Recipe> findAllRecipes() {

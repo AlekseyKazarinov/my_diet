@@ -7,10 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+
 
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
@@ -25,5 +25,7 @@ public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     @Query(value = "SELECT r FROM RECIPE r JOIN r.lifestyles s WHERE r.NAME = ?1 AND s = ?2", nativeQuery = true)
     List<Recipe> retrieveByNameFilterByTag(String name, Lifestyle lifestyle);
+
+
 
 }

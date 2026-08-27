@@ -6,7 +6,6 @@ import com.mydiet.mydiet.domain.dto.output.NutritionProgramOutput;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.domain.exception.BadRequestException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
-import com.mydiet.mydiet.infrastructure.ShoppingListService;
 import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import com.mydiet.mydiet.repository.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;

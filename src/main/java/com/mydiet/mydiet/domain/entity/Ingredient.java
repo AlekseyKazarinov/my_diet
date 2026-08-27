@@ -34,6 +34,7 @@ public class Ingredient {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "ingredients")
+    @ToString.Exclude
     private Set<Recipe> relatedRecipes;
 /*
     @Override

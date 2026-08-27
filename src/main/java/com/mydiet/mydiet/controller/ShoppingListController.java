@@ -2,7 +2,7 @@ package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.domain.entity.ShoppingList;
 import com.mydiet.mydiet.domain.entity.WeekList;
-import com.mydiet.mydiet.infrastructure.ShoppingListService;
+import com.mydiet.mydiet.service.ShoppingListService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

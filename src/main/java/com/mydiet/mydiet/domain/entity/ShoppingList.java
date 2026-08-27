@@ -18,12 +18,11 @@ public class ShoppingList {
     @Id
     private Long nutritionProgramNumber;
 
-
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     private List<WeekList> listsByWeek;
 
     @OneToOne
-    @MapsId
+    //@MapsId
     @JsonIgnore
     private NutritionProgram program;
 
