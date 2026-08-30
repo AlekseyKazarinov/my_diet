@@ -29,8 +29,9 @@ public class Ingredient {
     @ManyToOne
     @JoinColumn(name = "PRODUCT_ID")
     private Product product;
-    private Double totalQuantity;
-    private QuantityUnit unit;
+
+    @Embedded
+    private Quantity quantity;
 
     @JsonIgnore
     @ManyToMany(mappedBy = "ingredients")

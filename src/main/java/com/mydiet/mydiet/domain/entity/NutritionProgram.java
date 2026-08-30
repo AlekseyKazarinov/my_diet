@@ -38,8 +38,6 @@ public class NutritionProgram {
     //@JsonProperty(access = READ_ONLY)  - commented. This property will be read-only in entity representing the program in the api for android applications
     private Status status;
 
-    //@Index(...)
-    private String   langId;     // grouping by the same context  todo: use
     private Language language;
 
     private String name;             // preview

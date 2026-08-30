@@ -29,15 +29,13 @@ public class Recipe {
     private Long     id;
 
     @Column(unique = true)
-    private String   name;
+    private String name;
 
-    //@Index(...)
-    private String   langId;     // grouping by the same context
     private Language language;
 
     @ManyToOne
-    private Image   image;
-    private String  description;
+    private Image image;
+    private String description;
     private FoodCategory foodCategory;
 
     @ElementCollection  // https://www.baeldung.com/jpa-tagging https://www.baeldung.com/jpa-tagging-advanced
@@ -45,8 +43,8 @@ public class Recipe {
 
     @ManyToMany//(cascade = CascadeType.ALL)
     @JoinTable(name = "RECIPE_INGREDIENT",
-            joinColumns=@JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID"),
-            inverseJoinColumns=@JoinColumn(name = "INGREDIENT_ID", referencedColumnName = "ID"))
+            joinColumns = @JoinColumn(name = "RECIPE_ID", referencedColumnName = "ID"),
+            inverseJoinColumns = @JoinColumn(name = "INGREDIENT_ID", referencedColumnName = "ID"))
     private List<Ingredient> ingredients;
 
     private Double totalKcal;

@@ -15,8 +15,11 @@ public class IngredientStorageService {
     private final IngredientRepository ingredientRepository;
 
     public Ingredient saveIfOriginal(Ingredient ingredient) {
-        var optionalStoredIngredient = ingredientRepository.findByProductAndTotalQuantityAndUnit(
-                ingredient.getProduct(), ingredient.getTotalQuantity(), ingredient.getUnit()
+        //var totalQuantity = ingredient.getQuantity() == null ? null : ingredient.getQuantity().getTotalQuantity();
+        //var unit = ingredient.getQuantity() == null ? null : ingredient.getQuantity().getUnit();
+
+        var optionalStoredIngredient = ingredientRepository.findByProductAndQuantity(
+                ingredient.getProduct(), ingredient.getQuantity()
         );
 
         if (optionalStoredIngredient.isPresent()) {

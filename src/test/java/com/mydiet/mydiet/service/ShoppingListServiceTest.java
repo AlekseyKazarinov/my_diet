@@ -46,8 +46,7 @@ public class ShoppingListServiceTest {
     private ShoppingListService shoppingListService;
 
     @Test
-    public void generateShoppingListFromNutritionProgram()
-    {
+    public void generateShoppingListFromNutritionProgram() {
         // Given
         var nutritionProgram = createNutritionProgram();
         when(shoppingListRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
@@ -93,11 +92,11 @@ public class ShoppingListServiceTest {
 
     public NutritionProgram createNutritionProgram() {
         var product = createProduct();
+        var quantity = Quantity.of(1.0, QuantityUnit.PIECE);
 
         var ingredient = Ingredient.builder()
                 .product(product)
-                .totalQuantity(1.0)
-                .unit(QuantityUnit.PIECE)
+                .quantity(quantity)
                 .build();
 
         var recipe = Recipe.builder()

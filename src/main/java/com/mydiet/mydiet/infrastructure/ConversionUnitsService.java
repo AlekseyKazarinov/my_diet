@@ -30,26 +30,16 @@ public class ConversionUnitsService {
     private final ProductService productService;
 
     private Double getCoefficientByName(ConversionUnits conversionUnits, QuantityUnit unit) {
-        Double ratio;
-
-        switch (unit) {
-            case CUP: ratio = conversionUnits.getCup();
-                break;
-            case DROP: ratio =  conversionUnits.getDrop();
-                break;
-            case TABLESPOON: ratio =  conversionUnits.getTablespoon();
-                break;
-            case TEASPOON: ratio =  conversionUnits.getTeaspoon();
-                break;
-            case GLASS: ratio =  conversionUnits.getGlass();
-                break;
-            case PINCH: ratio =  conversionUnits.getPinch();
-                break;
-            case PIECE: ratio =  conversionUnits.getPiece();
-                break;
-            default:
-                throw new IllegalArgumentException(String.format("Not supported unit to convert: %s", unit));
-        }
+        Double ratio = switch (unit) {
+            case CUP -> conversionUnits.getCup();
+            case DROP -> conversionUnits.getDrop();
+            case TABLESPOON -> conversionUnits.getTablespoon();
+            case TEASPOON -> conversionUnits.getTeaspoon();
+            case GLASS -> conversionUnits.getGlass();
+            case PINCH -> conversionUnits.getPinch();
+            case PIECE -> conversionUnits.getPiece();
+            default -> throw new IllegalArgumentException(String.format("Not supported unit to convert: %s", unit));
+        };
 
         if (ratio == null || ratio.equals(0.0)) {
             throw new IllegalArgumentException(String.format("Conversion coefficient was not declared for unit %s", unit));

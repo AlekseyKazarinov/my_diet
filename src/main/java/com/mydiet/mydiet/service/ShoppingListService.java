@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.mydiet.mydiet.domain.entity.Status.*;
@@ -136,7 +137,7 @@ public class ShoppingListService {
               Collectors.groupingBy(
                        Ingredient::getProduct,
                        LinkedHashMap::new,
-                       mapping(i -> Quantity.of(i.getTotalQuantity(), i.getUnit()), toList())
+                       mapping(Ingredient::getQuantity, toList())
               ));
    }
 

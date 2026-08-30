@@ -7,13 +7,11 @@ import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Recipe;
-import com.mydiet.mydiet.domain.exception.GenericException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +50,6 @@ public class RecipeService {
         var recipe = Recipe.builder()
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
-                .langId(UUID.randomUUID().toString())
                 .language(Optional.ofNullable(recipeCreationInput.getLanguage()).orElse(Language.RUSSIAN))
                 .foodCategory(recipeCreationInput.getFoodCategory())
                 .ingredients(ingredients)
@@ -98,8 +95,8 @@ public class RecipeService {
     }
 
     public Optional<Recipe> findRecipeTranslationInto(Language language, Recipe recipe) {
-        return recipeRepository.findRecipeByLangIdAndLanguage(
-                recipe.getLangId(), language
+        return recipeRepository.findRecipeByIdAndLanguage(
+                recipe.getId(), language
         );
     }
 

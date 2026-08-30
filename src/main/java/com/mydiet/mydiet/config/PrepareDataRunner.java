@@ -44,10 +44,11 @@ public class PrepareDataRunner implements CommandLineRunner {
                 .build();
         product = productRepository.save(product);
 
+        var quantity = Quantity.of(1.0, QuantityUnit.PIECE);
+
         var ingredient = Ingredient.builder()
                 .product(product)
-                .totalQuantity(1.0)
-                .unit(QuantityUnit.PIECE)
+                .quantity(quantity)
                 .build();
 
         ingredient = ingredientRepository.save(ingredient);

@@ -1,12 +1,10 @@
 package com.mydiet.mydiet.domain.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 @Data
 @AllArgsConstructor(staticName="of")
+@NoArgsConstructor
 @ToString
 public class Quantity {
 

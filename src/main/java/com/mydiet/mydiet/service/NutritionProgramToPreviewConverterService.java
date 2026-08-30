@@ -5,15 +5,13 @@ import com.mydiet.mydiet.domain.dto.output.android.*;
 import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Lifestyle;
 import com.mydiet.mydiet.domain.entity.NutritionProgram;
+import com.mydiet.mydiet.domain.entity.Quantity;
 import com.mydiet.mydiet.domain.exception.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.mydiet.mydiet.domain.entity.Status.PUBLISHED;
@@ -116,8 +114,8 @@ public class NutritionProgramToPreviewConverterService {
             ingredientsOutput.add(
                     Ingredient.builder()
                             .product(ingredient.getProduct().getName())
-                            .totalQuantity(ingredient.getTotalQuantity())
-                            .unit(ingredient.getUnit().shortName(ingredient.getProduct().getLanguage()))
+                            .totalQuantity(ingredient.getQuantity().getTotalQuantity())
+                            .unit(ingredient.getQuantity().getUnit().shortName(ingredient.getProduct().getLanguage()))
                             .build()
             );
         }
@@ -152,7 +150,6 @@ public class NutritionProgramToPreviewConverterService {
                         .dayColor(nutritionProgram.getDayColor())
                         .mainColor(nutritionProgram.getMainColor())
                         .lightColor(nutritionProgram.getLightColor())
-                        .langId(nutritionProgram.getLangId())
                         .language(nutritionProgram.getLanguage().toString())
                         .name(nutritionProgram.getName())
                         .description(nutritionProgram.getDescription())

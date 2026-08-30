@@ -1,5 +1,6 @@
-package com.mydiet.mydiet.config;
+package com.mydiet.mydiet.controller;
 
+import com.mydiet.mydiet.config.ErrorMessage;
 import com.mydiet.mydiet.domain.exception.BadRequestException;
 import com.mydiet.mydiet.domain.exception.GenericException;
 import com.mydiet.mydiet.domain.exception.NotFoundException;

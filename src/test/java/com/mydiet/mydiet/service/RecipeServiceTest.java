@@ -63,6 +63,8 @@ public class RecipeServiceTest {
     }
 
     private Ingredient createTestIngredient() {
+        var quantity = Quantity.of(2.0, QuantityUnit.KILOGRAM);
+
         return Ingredient.builder()
                 .id(TEST_INGREDIENT_ID)
                 .product(Product.builder()
@@ -71,8 +73,7 @@ public class RecipeServiceTest {
                         .consistence(Consistence.SOLID)
                         .productType(ProductType.OTHER)
                         .build())
-                .totalQuantity(2.0)
-                .unit(QuantityUnit.KILOGRAM)
+                .quantity(quantity)
                 .build();
     }
 

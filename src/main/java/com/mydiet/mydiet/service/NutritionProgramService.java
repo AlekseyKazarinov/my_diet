@@ -10,7 +10,6 @@ import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import com.mydiet.mydiet.repository.ShoppingListRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.util.Pair;
@@ -38,7 +37,7 @@ public class NutritionProgramService {
     private final NutritionProgramRepository nutritionProgramRepository;
     private final ShoppingListService shoppingListService;
     private final ShoppingListRepository shoppingListRepository;
-    private final NutritionProgramStorageService programStorageService;
+    private final NutritionProgramStorageService nutritionProgramStorageService;
     private final ImageService imageService;
 
     public NutritionProgram createValidatedNutritionProgram(NutritionProgramInput programCreationInput) {
@@ -76,15 +75,13 @@ public class NutritionProgramService {
         Utils.validateTextFieldIsSet(programTranslationInput.getDescription(), "description", programTranslationInput);
         Utils.validateTextFieldIsSet(programTranslationInput.getShortDescription(), "shortDescription", programTranslationInput);
 
-        var program = programStorageService.getProgramOrElseThrow(programNumber);
+        var program = nutritionProgramStorageService.getProgramOrElseThrow(programNumber);
 
         if (Language.areEqual(program.getLanguage(), programTranslationInput.getLanguage())) {
             throw new ValidationException("Nutrition Program can not be translated into the same language");
         }
 
-        var optionalAlreadyTranslatedRecipe = nutritionProgramRepository.findProgramByLangIdAndLanguage(
-                program.getLangId(), program.getLanguage()
-        );
+        var optionalAlreadyTranslatedRecipe = nutritionProgramRepository.findProgramByLanguage(program.getLanguage());
 
         if (optionalAlreadyTranslatedRecipe.isPresent()) {
             throw new ValidationException(
@@ -175,18 +172,16 @@ public class NutritionProgramService {
 
         if (CollectionUtils.isEmpty(lifestyles)) {
             lifestyles = dailyDietList.stream()
-                    .map(dailyDiet -> {
-                        return dailyDiet.getLifestyles();
-                    })
+                    .map(DailyDiet::getLifestyles)
                     .reduce(Sets::intersection)
                     .orElse(Collections.emptySet());
         }
 
         var nutritionProgram = NutritionProgram.builder()
                 .name(input.getName())
+                .shortDescription(input.getShortDescription())
                 .description(input.getDescription())
                 .additionalInfo(input.getAdditionalInfo())
-                .langId(UUID.randomUUID().toString())
                 .language(Optional.ofNullable(input.getLanguage()).orElse(Language.RUSSIAN))
                 .lifestyles(lifestyles)
                 .dayColor(Optional.ofNullable(input.getDayColor()).orElse(DEFAULT_COLOR))
@@ -197,25 +192,13 @@ public class NutritionProgramService {
                 .status(DRAFT)
                 .build();
 
-        return saveIfOriginal(nutritionProgram);
-    }
-
-    private NutritionProgram saveIfOriginal(NutritionProgram nutritionProgram) {
-        var example = Example.of(nutritionProgram);
-        var optionalStoredProgram = nutritionProgramRepository.findOne(example);
-
-        if (optionalStoredProgram.isPresent()) {
-            log.info("Nutrition Program with name: {} already exists", nutritionProgram.getName());
-            return optionalStoredProgram.get();
-        }
-
-        return nutritionProgramRepository.save(nutritionProgram);
+        return nutritionProgramStorageService.saveIfOriginal(nutritionProgram);
     }
 
     public NutritionProgram updateNutritionProgram(Long programNumber, BaseNutritionProgramInput baseNutritionProgramInput) {
         validateBaseNutritionProgramInput(baseNutritionProgramInput);
 
-        var program = programStorageService.getProgramOrElseThrow(programNumber);
+        var program = nutritionProgramStorageService.getProgramOrElseThrow(programNumber);
 
         // required properties
         Optional.ofNullable(baseNutritionProgramInput.getName()).ifPresent(program::setName);
@@ -339,17 +322,17 @@ public class NutritionProgramService {
     }
 
     public NutritionProgram acceptProgram(Long programNumber) {
-        var program = programStorageService.getProgramOrElseThrow(programNumber);
+        var program = nutritionProgramStorageService.getProgramOrElseThrow(programNumber);
         return setStatusFor(program, ACCEPTED);
     }
 
     public NutritionProgram publishProgram(Long programNumber) {
-        var program = programStorageService.getProgramOrElseThrow(programNumber);
+        var program = nutritionProgramStorageService.getProgramOrElseThrow(programNumber);
         return setStatusFor(program, PUBLISHED);
     }
 
     public NutritionProgram revertProgram(Long programNumber) {
-        var program = programStorageService.getProgramOrElseThrow(programNumber);
+        var program = nutritionProgramStorageService.getProgramOrElseThrow(programNumber);
         return revertStatusFor(program);
     }
 

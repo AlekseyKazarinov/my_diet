@@ -36,7 +36,6 @@ public class ProductService {
     public Product createProduct(ProductInput productCreationInput) {
         var product = Product.builder()
                 .name(productCreationInput.getName())
-                .langId(UUID.randomUUID().toString())
                 .language(Optional.ofNullable(productCreationInput.getLanguage()).orElse(Language.RUSSIAN))
                 .productType(productCreationInput.getProductType())
                 .consistence(productCreationInput.getConsistence())

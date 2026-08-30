@@ -3,6 +3,7 @@ package com.mydiet.mydiet.service;
 import com.google.common.base.Preconditions;
 import com.mydiet.mydiet.domain.dto.input.IngredientInput;
 import com.mydiet.mydiet.domain.entity.Ingredient;
+import com.mydiet.mydiet.domain.entity.Quantity;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
 import com.mydiet.mydiet.event.SourceEntity;
 import com.mydiet.mydiet.repository.IngredientRepository;
@@ -33,11 +34,11 @@ public class IngredientService {
 
     public Ingredient createIngredient(IngredientInput ingredientCreationInput) {
         var product = productService.createProduct(ingredientCreationInput.getProduct());
+        var quantity = Quantity.of(ingredientCreationInput.getTotalQuantity(), ingredientCreationInput.getUnit());
 
         var ingredient = Ingredient.builder()
                 .product(product)
-                .unit(ingredientCreationInput.getUnit())
-                .totalQuantity(ingredientCreationInput.getTotalQuantity())
+                .quantity(quantity)
                 .build();
 
         return ingredientStorageService.saveIfOriginal(ingredient);
@@ -52,10 +53,10 @@ public class IngredientService {
 
     private Ingredient updateIngredient(Long ingredientId, IngredientInput ingredientUpdateInput) {
         var ingredient = getIngredientOrThrow(ingredientId);
+        var quantity = Quantity.of(ingredientUpdateInput.getTotalQuantity(), ingredientUpdateInput.getUnit());
 
         productService.updateProduct(ingredient.getProduct().getId(), ingredientUpdateInput.getProduct());
-        ingredient.setTotalQuantity(ingredientUpdateInput.getTotalQuantity());
-        ingredient.setUnit(ingredientUpdateInput.getUnit());
+        ingredient.setQuantity(quantity);
 
         ingredient = ingredientRepository.save(ingredient);
         domainEventPublisher.publishEvent(ingredientId, SourceEntity.INGREDIENT);

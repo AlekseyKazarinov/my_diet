@@ -29,8 +29,6 @@ public class Product {
     @Column(unique = true)
     private String name;
 
-    //@Index(...)
-    private String   langId;     // grouping by the same context || temporary unused
     private Language language;
 
     private ProductType productType;

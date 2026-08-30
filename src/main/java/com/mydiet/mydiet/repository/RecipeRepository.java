@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
 
     Optional<Recipe> findRecipeByName(String name);
-    Optional<Recipe> findRecipeByLangIdAndLanguage(String langId, Language language);
+    Optional<Recipe> findRecipeByIdAndLanguage(Long recipeId, Language language);
 
     Page<Recipe> findAllByLanguageAndTotalKcalLessThanEqualOrderByTotalKcalDesc(Language language, Double totalKcal, Pageable pageRequest);
     Page<Recipe> findAllByLanguageAndTotalKcalGreaterThanOrderByTotalKcalAsc(Language language, Double totalKcal, Pageable pageRequest);
