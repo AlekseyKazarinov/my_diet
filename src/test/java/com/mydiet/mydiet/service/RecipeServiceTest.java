@@ -1,12 +1,9 @@
 package com.mydiet.mydiet.service;
 
-import com.mydiet.mydiet.domain.dto.input.ImageInput;
-import com.mydiet.mydiet.domain.dto.input.IngredientInput;
-import com.mydiet.mydiet.domain.dto.input.ProductInput;
-import com.mydiet.mydiet.domain.dto.input.RecipeInput;
+import com.mydiet.mydiet.domain.dto.input.*;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.infrastructure.Consistence;
-import com.mydiet.mydiet.infrastructure.UnitGraphService;
+import com.mydiet.mydiet.repository.RecipeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -17,10 +14,13 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.mydiet.mydiet.domain.entity.Lifestyle.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @Slf4j
@@ -28,11 +28,14 @@ import static org.mockito.Mockito.when;
 @RequiredArgsConstructor
 public class RecipeServiceTest {
 
+    private final String LANG_GROUP_ID = UUID.randomUUID().toString();
     private final Long TEST_INGREDIENT_ID = 1234L;
     private final String TEST_PRODUCT_NAME = "TEST_PRODUCT";
     private final String TEST_RECIPE_NAME = "Простой салат из огурцов и помидоров";
     private final String TEST_RECIPE_DESCRIPTION = "Нарезать огурцы с помидорами в равных долях. " +
             "Заправить майонезом.";
+    private final String ENGLISH_NAME = "Fish";
+    private final String ENGLISH_DESCRIPTION = "Description of Fish";
 
 
     //@MockitoBean
@@ -42,6 +45,15 @@ public class RecipeServiceTest {
     @Mock
     private RecipeStorageService recipeStorageService;
 
+    @Mock
+    private RecipeRepository recipeRepository;
+
+    @Mock
+    private ProductService productService;
+
+    @Mock
+    private ImageService imageService;
+
     @InjectMocks
     private RecipeService recipeService;
 
@@ -49,7 +61,7 @@ public class RecipeServiceTest {
     public void createRecipeWithRecipeInput() {
         // Given
         var recipeInput = createRecipeInput();
-        when(ingredientService.createIngredient(any())).thenReturn(createTestIngredient());
+        when(ingredientService.createIngredient(any())).thenReturn(createTestProductIngredient());
         when(recipeStorageService.saveIfOriginal(any())).then(AdditionalAnswers.returnsFirstArg());
 
         // When
@@ -62,7 +74,77 @@ public class RecipeServiceTest {
         Assertions.assertEquals(2, recipe.getIngredients().size());
     }
 
-    private Ingredient createTestIngredient() {
+    @Test
+    public void translateRecipeCorrect() {
+        // Given
+        when(recipeRepository.findById(eq(1L))).thenReturn(Optional.of(createOriginalRecipe()));
+        when(recipeRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
+        when(recipeStorageService.saveIfOriginal(any())).then(AdditionalAnswers.returnsFirstArg());
+
+        var recipeTranslationInput = createEnglishRecipeTranslationInput();
+        var translatedProduct = getTranslatedProduct();
+
+        doReturn(translatedProduct).when(productService).getProductByLangGroupIdOrThrow(anyString(), any());
+
+        // When
+        var translatedRecipe = recipeService.translateValidatedRecipe(1L, recipeTranslationInput);
+
+        // Then
+        Assertions.assertEquals(Language.ENGLISH, translatedRecipe.getLanguage());
+        Assertions.assertNotNull(translatedRecipe.getLangGroupId());
+
+        Assertions.assertEquals(ENGLISH_NAME, translatedRecipe.getName());
+        Assertions.assertEquals(ENGLISH_DESCRIPTION, translatedRecipe.getDescription());
+    }
+
+    private RecipeTranslationInput createEnglishRecipeTranslationInput() {
+        return RecipeTranslationInput.builder()
+                .name(ENGLISH_NAME)
+                .description(ENGLISH_DESCRIPTION)
+                .language(Language.ENGLISH)
+                .build();
+    }
+
+    private Recipe createOriginalRecipe() {
+        return Recipe.builder()
+                .id(1L)
+                .name("Рыба")
+                .description("Описание рыбы")
+                .langGroupId(UUID.randomUUID().toString())
+                .language(Language.RUSSIAN)
+                .ingredients(List.of(createFishIngredient()))
+                .totalKcal(100.0)
+                .totalProteins(12.0)
+                .totalFats(12.0)
+                .totalCarbohydrates(12.0)
+                .build();
+    }
+
+    private Ingredient createFishIngredient() {
+        return Ingredient.builder()
+                .id(1L)
+                .product(Product.builder()
+                        .id(1L)
+                        .name("Рыба")
+                        .langGroupId(LANG_GROUP_ID)
+                        .productType(ProductType.FISH)
+                        .consistence(Consistence.SOLID)
+                        .build())
+                .quantity(Quantity.of(1.0, QuantityUnit.PIECE))
+                .build();
+    }
+
+    private Product getTranslatedProduct() {
+        return Product.builder()
+                .name("fish")
+                .langGroupId(LANG_GROUP_ID)
+                .language(Language.ENGLISH)
+                .productType(ProductType.FISH)
+                .consistence(Consistence.SOLID)
+                .build();
+    }
+
+    private Ingredient createTestProductIngredient() {
         var quantity = Quantity.of(2.0, QuantityUnit.KILOGRAM);
 
         return Ingredient.builder()

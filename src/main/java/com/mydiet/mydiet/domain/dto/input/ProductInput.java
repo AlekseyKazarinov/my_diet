@@ -13,6 +13,8 @@ import static com.mydiet.mydiet.infrastructure.Consistence.NOT_DEFINED;
 public class ProductInput {
 
     private String   name;
+
+    private String langGroupId;
     private Language language;
 
     private ProductType productType;

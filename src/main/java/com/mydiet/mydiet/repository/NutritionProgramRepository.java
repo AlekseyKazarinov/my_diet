@@ -46,5 +46,6 @@ public interface NutritionProgramRepository extends JpaRepository<NutritionProgr
 
     public Long countAllByLanguage(Language language);
 
-    Optional<NutritionProgram> findProgramByLanguage(Language language);
+    List<NutritionProgram> findNutritionProgramByLangGroupId(String langGroupId);
+    Optional<NutritionProgram> findNutritionProgramByLangGroupIdAndLanguage(String langGroupId, Language language);
 }

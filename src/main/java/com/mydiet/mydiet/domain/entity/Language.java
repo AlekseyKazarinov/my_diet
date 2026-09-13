@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public enum Language {
 
-    RUSSIAN("RU"),  // default
+    RUSSIAN("RU"),  // default, language null means RUSSIAN
     ENGLISH("EN");
 
     private final String code;
@@ -15,9 +15,9 @@ public enum Language {
     }
 
     public static boolean areEqual(Language leftLanguage, Language rightLanguage) {
-        if (Language.isRussian(leftLanguage) && Language.isRussian(rightLanguage)) {
+        if ((leftLanguage == null && isRussian(rightLanguage))
+            || (isRussian(leftLanguage) && rightLanguage == null))
             return true;
-        }
 
         return leftLanguage == rightLanguage;
     }

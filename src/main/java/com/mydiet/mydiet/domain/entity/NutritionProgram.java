@@ -14,7 +14,7 @@ import java.util.Set;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 @Entity
-@Table(name = "NUTRITION_PROGRAM")
+@Table(name = "NUTRITION_PROGRAM", indexes = @Index(columnList = "langGroupId"))
 @Builder
 @Data
 @NoArgsConstructor
@@ -38,6 +38,7 @@ public class NutritionProgram {
     //@JsonProperty(access = READ_ONLY)  - commented. This property will be read-only in entity representing the program in the api for android applications
     private Status status;
 
+    private String langGroupId;
     private Language language;
 
     private String name;             // preview

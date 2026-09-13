@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.checkerframework.checker.units.qual.A;
+import org.checkerframework.checker.units.qual.N;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -66,6 +68,23 @@ public class RecipeController {
         if (optionalRecipe.isPresent()) {
             return ResponseEntity.status(HttpStatus.OK).body(optionalRecipe.get());
 
+        } else {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+    }
+
+    @Operation(summary = "Get Same Recipes but in different languages")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recipes in different languages found", content = @Content(schema = @Schema(implementation = Recipe.class))),
+            @ApiResponse(responseCode = "204", description = "There is no different Recipes with the same language group id")
+    })
+    @GetMapping(path = "{recipeId}/language-group-recipes")
+    public ResponseEntity<List<Recipe>> getSameRecipesWithDifferentLanguages(@PathVariable @NonNull Long recipeId) {
+        var optionalRecipe = recipeService.findRecipeById(recipeId);
+
+        if (optionalRecipe.isPresent()) {
+            var listOfRecipeGroupWithDifferentLanguages = recipeService.findRecipeTranslations(optionalRecipe.get().getLangGroupId());
+            return ResponseEntity.status(HttpStatus.OK).body(listOfRecipeGroupWithDifferentLanguages);
         } else {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }

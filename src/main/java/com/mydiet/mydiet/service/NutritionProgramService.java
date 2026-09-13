@@ -74,53 +74,74 @@ public class NutritionProgramService {
         Utils.validateTextFieldIsSet(programTranslationInput.getName(), "name", programTranslationInput);
         Utils.validateTextFieldIsSet(programTranslationInput.getDescription(), "description", programTranslationInput);
         Utils.validateTextFieldIsSet(programTranslationInput.getShortDescription(), "shortDescription", programTranslationInput);
+        Utils.validateTextFieldIsSet(programTranslationInput.getAdditionalInfo(), "additionalInfo", programTranslationInput);
 
-        var program = nutritionProgramStorageService.getProgramOrElseThrow(programNumber);
+        var originalProgram = nutritionProgramStorageService.getProgramOrElseThrow(programNumber);
 
-        if (Language.areEqual(program.getLanguage(), programTranslationInput.getLanguage())) {
+        if (Language.areEqual(originalProgram.getLanguage(), programTranslationInput.getLanguage())) {
             throw new ValidationException("Nutrition Program can not be translated into the same language");
         }
 
-        var optionalAlreadyTranslatedRecipe = nutritionProgramRepository.findProgramByLanguage(program.getLanguage());
+        var optionalAlreadyTranslatedProgram = nutritionProgramRepository.findNutritionProgramByLangGroupIdAndLanguage(
+                originalProgram.getLangGroupId(),
+                programTranslationInput.getLanguage()
+        );
 
-        if (optionalAlreadyTranslatedRecipe.isPresent()) {
+        if (optionalAlreadyTranslatedProgram.isPresent()) {
             throw new ValidationException(
                     String.format("Translation into %s for Nutrition Program with Number #%s is Nutrition Program #%s",
                             Language.print(programTranslationInput.getLanguage()),
-                            program.getNumber(),
-                            optionalAlreadyTranslatedRecipe.get().getNumber()
+                            originalProgram.getNumber(),
+                            optionalAlreadyTranslatedProgram.get().getNumber()
                     ));
         }
 
-        if (!StringUtils.isEmpty(program.getAdditionalInfo()) && StringUtils.isEmpty(programTranslationInput.getAdditionalInfo())) {
+        if (StringUtils.hasText(originalProgram.getAdditionalInfo()) && !StringUtils.hasText(programTranslationInput.getAdditionalInfo())) {
             log.warn("ProgramTranslationInput does not contain additionalInfo unlike original Nutrition Program #{} in {} language",
-                    program.getNumber(), Language.print(programTranslationInput.getLanguage())
+                    originalProgram.getNumber(), Language.print(programTranslationInput.getLanguage())
             );
         }
 
+        var translatedDailyDiets = new ArrayList<DailyDiet>();
+        originalProgram.getDailyDiets().forEach(dailyDiet -> {
+            var translatedDailyDiet = dailyDietService.createTranslatedDailyDiet(programTranslationInput.getLanguage(), dailyDiet);
+            translatedDailyDiets.add(translatedDailyDiet);
+        });
 
-        // todo: implement validation and copying all nested entities (recipes, meals, daily diets)
-        /*program.getDailyDiets().stream()
-                .flatMap(dailyDiet -> dailyDiet.getMeals().stream())
-                .map(Meal::getRecipe)
-                .map(recipe -> recipeService.findRecipeTranslationInto(programTranslationInput.getLanguage(), recipe)
-                        .orElseThrow(() -> new ValidationException(
-                                String.format("Recipe #%s has no translation into %s language for ProgramTranslationInput",
-                                        recipe.getId(),
-                                        programTranslationInput.getLanguage())
-                                ))
-                )*/
+        var nutritionProgramInput = convertToNutritionProgramInput(originalProgram, programTranslationInput, translatedDailyDiets);
+        var translatedProgram = createNutritionProgram(nutritionProgramInput);
 
+        return nutritionProgramStorageService.saveIfOriginal(translatedProgram);
+    }
 
-        program.setNumber(null);
-        program.setLanguage(programTranslationInput.getLanguage());
+    private NutritionProgramInput convertToNutritionProgramInput(
+            NutritionProgram originalProgram,
+            ProgramTranslationInput programTranslationInput,
+            List<DailyDiet> translatedDailyDiets
+    ) {
+        return NutritionProgramInput.builder()
+                .dailyDietIds(translatedDailyDiets.stream()
+                        .map(DailyDiet::getId)
+                        .toList())
+                .lifestyles(new HashSet<>(originalProgram.getLifestyles()))
+                .dailyNumberOfMeals(originalProgram.getDailyNumberOfMeals())
+                .langGroupId(Optional.ofNullable(originalProgram.getLangGroupId())
+                        .orElse(UUID.randomUUID().toString())
+                )
+                .language(programTranslationInput.getLanguage())
+                .name(programTranslationInput.getName())
+                .shortDescription(programTranslationInput.getShortDescription())
+                .description(programTranslationInput.getDescription())
+                .additionalInfo(programTranslationInput.getAdditionalInfo())
+                .image(ImageInput.builder()
+                        .name(originalProgram.getImage() != null ? originalProgram.getImage().getName() : null)
+                        .resource(originalProgram.getImage() != null ? originalProgram.getImage().getResource() : null)
+                        .build())
+                .dayColor(originalProgram.getDayColor())
+                .mainColor(originalProgram.getMainColor())
+                .lightColor(originalProgram.getLightColor())
+                .build();
 
-        program.setName(programTranslationInput.getName());
-        program.setDescription(programTranslationInput.getDescription());
-        program.setShortDescription(programTranslationInput.getShortDescription());
-        program.setAdditionalInfo(programTranslationInput.getAdditionalInfo());
-
-        return nutritionProgramRepository.save(program);
     }
 
     private void validateLanguage(NutritionProgramInput programInput) {
@@ -182,6 +203,7 @@ public class NutritionProgramService {
                 .shortDescription(input.getShortDescription())
                 .description(input.getDescription())
                 .additionalInfo(input.getAdditionalInfo())
+                .langGroupId(Optional.ofNullable(input.getLangGroupId()).orElse(UUID.randomUUID().toString()))
                 .language(Optional.ofNullable(input.getLanguage()).orElse(Language.RUSSIAN))
                 .lifestyles(lifestyles)
                 .dayColor(Optional.ofNullable(input.getDayColor()).orElse(DEFAULT_COLOR))
@@ -216,6 +238,7 @@ public class NutritionProgramService {
         return nutritionProgramRepository.save(program);
     }
 
+
     private void updateImage(NutritionProgram program, ImageInput imageUpdateInput) {
         if (imageUpdateInput != null) {
             if (program.getImage() != null) {
@@ -231,6 +254,10 @@ public class NutritionProgramService {
 
     public Optional<NutritionProgram> findNutritionProgram(Long programNumber) {
         return nutritionProgramRepository.findById(programNumber);
+    }
+
+    public List<NutritionProgram> findNutritionProgramTranslations(String langGroupId) {
+        return nutritionProgramRepository.findNutritionProgramByLangGroupId(langGroupId);
     }
 
     public Long getTotalNumberOfAllPrograms() {
@@ -519,11 +546,11 @@ public class NutritionProgramService {
 
         var filteredHighPrograms = highPrograms.filter(program -> shoppingListForProgramExcludesProductsIn(productExclusion, program))
                 .limit(numberAbove)
-                .collect(Collectors.toList());
+                .toList();
 
         var filteredLowPrograms = lowPrograms.filter(program -> shoppingListForProgramExcludesProductsIn(productExclusion, program))
                 .limit(numberBelow)
-                .collect(Collectors.toList());
+                .toList();
 
         return Stream.concat(filteredHighPrograms.stream(), filteredLowPrograms.stream())
                 .sorted(getDefaultComparatorForSortingByKcal(kcal))
@@ -550,4 +577,6 @@ public class NutritionProgramService {
         shoppingListService.deleteShoppingList(programNumber);
         nutritionProgramRepository.deleteById(programNumber);
     }
+
+
 }

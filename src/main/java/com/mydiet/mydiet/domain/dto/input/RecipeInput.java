@@ -22,6 +22,7 @@ public class RecipeInput {
     private FoodCategory   foodCategory;
     private Set<Lifestyle> lifestyles;
 
+    private String langGroupId;
     private Language language;
 
     private List<IngredientInput> ingredients;

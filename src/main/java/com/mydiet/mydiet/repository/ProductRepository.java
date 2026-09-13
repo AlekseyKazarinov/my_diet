@@ -1,5 +1,6 @@
 package com.mydiet.mydiet.repository;
 
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.domain.entity.ProductType;
 import com.mydiet.mydiet.domain.exception.ValidationException;
@@ -13,5 +14,6 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
 
     public Optional<Product> findProductByName(String name);
     public List<Product> findProductByProductType(ProductType productType);
+    public Optional<Product> findProductByLangGroupIdAndLanguage(String langGroupId, Language language);
 
 }

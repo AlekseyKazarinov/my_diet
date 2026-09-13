@@ -33,7 +33,7 @@ public class IngredientService {
     }
 
     public Ingredient createIngredient(IngredientInput ingredientCreationInput) {
-        var product = productService.createProduct(ingredientCreationInput.getProduct());
+        var product = productService.createValidatedProduct(ingredientCreationInput.getProduct());
         var quantity = Quantity.of(ingredientCreationInput.getTotalQuantity(), ingredientCreationInput.getUnit());
 
         var ingredient = Ingredient.builder()

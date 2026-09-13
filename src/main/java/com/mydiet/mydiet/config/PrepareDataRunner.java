@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.mydiet.mydiet.domain.entity.Lifestyle.NOT_SPECIFIED;
 
@@ -40,6 +41,7 @@ public class PrepareDataRunner implements CommandLineRunner {
         var product = Product.builder()
                 .productType(ProductType.FISH)
                 .name("fish")
+                .langGroupId(UUID.randomUUID().toString())
                 .consistence(Consistence.SOLID)
                 .build();
         product = productRepository.save(product);
@@ -97,6 +99,7 @@ public class PrepareDataRunner implements CommandLineRunner {
         var nutritionProgram = NutritionProgram.builder()
                 .name("FISH")
                 .description("One day with fish")
+                .langGroupId(UUID.randomUUID().toString())
                 .dailyDiets(List.of(dailyDiet))
                 .lifestyles(Set.of(NOT_SPECIFIED))
                 .status(Status.PUBLISHED)
@@ -105,6 +108,5 @@ public class PrepareDataRunner implements CommandLineRunner {
         nutritionProgramRepository.save(nutritionProgram);
 
         shoppingListService.generateShoppingListFor(nutritionProgram);
-
     }
 }

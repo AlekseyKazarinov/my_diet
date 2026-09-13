@@ -15,7 +15,7 @@ import java.util.Set;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 @Entity
-@Table(name = "RECIPE")
+@Table(name = "RECIPE", indexes = @Index(columnList = "langGroupId"))
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -31,6 +31,7 @@ public class Recipe {
     @Column(unique = true)
     private String name;
 
+    private String langGroupId;
     private Language language;
 
     @ManyToOne

@@ -3,9 +3,11 @@ package com.mydiet.mydiet.service;
 import com.mydiet.mydiet.domain.dto.input.MealInput;
 import com.mydiet.mydiet.domain.dto.input.MealInputShortened;
 import com.mydiet.mydiet.domain.entity.FoodTime;
+import com.mydiet.mydiet.domain.entity.Language;
 import com.mydiet.mydiet.domain.entity.Meal;
 import com.mydiet.mydiet.domain.entity.Recipe;
 import com.mydiet.mydiet.domain.exception.NotFoundException;
+import com.mydiet.mydiet.domain.exception.ValidationException;
 import com.mydiet.mydiet.repository.MealRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +66,23 @@ public class MealService {
                 .build();
 
         return saveIfOriginal(meal);
+    }
+
+    public Meal createTranslatedMeal(Language language, Meal meal) {
+        var optionalTranslatedRecipe = recipeService.findRecipeTranslationInto(language, meal.getRecipe());
+
+        if (optionalTranslatedRecipe.isPresent()) {
+            var translatedMeal = Meal.builder()
+                    .recipe(optionalTranslatedRecipe.get())
+                    .foodTime(meal.getFoodTime())
+                    .build();
+            return mealRepository.save(translatedMeal);
+
+        } else throw new ValidationException(
+                String.format("Recipe #%s has no translation into %s language for ProgramTranslationInput",
+                        meal.getRecipe().getId(),
+                        language)
+        );
     }
 
     public Meal saveIfOriginal(Meal meal) {

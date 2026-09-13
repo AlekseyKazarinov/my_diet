@@ -1,8 +1,6 @@
 package com.mydiet.mydiet.service;
 
-import com.mydiet.mydiet.domain.dto.input.ImageInput;
-import com.mydiet.mydiet.domain.dto.input.RecipeInput;
-import com.mydiet.mydiet.domain.dto.input.RecipeTranslationInput;
+import com.mydiet.mydiet.domain.dto.input.*;
 import com.mydiet.mydiet.domain.entity.Image;
 import com.mydiet.mydiet.domain.entity.Ingredient;
 import com.mydiet.mydiet.domain.entity.Language;
@@ -28,6 +26,7 @@ import static com.mydiet.mydiet.domain.entity.Language.areEqual;
 public class RecipeService {
 
     private final IngredientService ingredientService;
+    private final ProductService productService;
     private final RecipeRepository recipeRepository;
     private final RecipeStorageService recipeStorageService;
     private final ImageService imageService;
@@ -50,6 +49,7 @@ public class RecipeService {
         var recipe = Recipe.builder()
                 .name(recipeCreationInput.getName())
                 .description(recipeCreationInput.getDescription())
+                .langGroupId(Optional.ofNullable(recipeCreationInput.getLangGroupId()).orElse(UUID.randomUUID().toString()))
                 .language(Optional.ofNullable(recipeCreationInput.getLanguage()).orElse(Language.RUSSIAN))
                 .foodCategory(recipeCreationInput.getFoodCategory())
                 .ingredients(ingredients)
@@ -66,38 +66,91 @@ public class RecipeService {
         Utils.validateTextFieldIsSet(recipeTranslationInput.getName(), "name", recipeTranslationInput);
         Utils.validateTextFieldIsSet(recipeTranslationInput.getDescription(), "description", recipeTranslationInput);
 
-        var recipe = getRecipeOrElseThrow(recipeId);
+        var originalRecipe = getRecipeOrElseThrow(recipeId);
 
-        if (Language.areEqual(recipe.getLanguage(), recipeTranslationInput.getLanguage())) {
+        if (Language.areEqual(originalRecipe.getLanguage(), recipeTranslationInput.getLanguage())) {
             throw new ValidationException("Recipe can not be translated into the same language");
         }
 
         var optionalAlreadyTranslatedRecipe = findRecipeTranslationInto(
-                recipeTranslationInput.getLanguage(), recipe
+                recipeTranslationInput.getLanguage(), originalRecipe
         );
 
         if (optionalAlreadyTranslatedRecipe.isPresent()) {
             throw new ValidationException(
-                    String.format("Translation into %s for Recipe with Id #%s is Recipe #%s",
+                    String.format("Not needed translation. Translation into %s for Recipe with Id #%s is Recipe #%s",
                             Language.isRussian(recipeTranslationInput.getLanguage()) ? RUSSIAN : recipeTranslationInput.getLanguage(),
-                            recipe.getId(),
+                            originalRecipe.getId(),
                             optionalAlreadyTranslatedRecipe.get().getId()
             ));
         }
 
-        recipe.setId(null);
-        recipe.setLanguage(recipeTranslationInput.getLanguage());
+        var langGroupId = Optional.ofNullable(originalRecipe.getLangGroupId()).orElse(UUID.randomUUID().toString());
 
-        recipe.setName(recipeTranslationInput.getName());
-        recipe.setDescription(recipeTranslationInput.getDescription());
+        if (originalRecipe.getLangGroupId() == null) {
+            originalRecipe.setLangGroupId(langGroupId);
+            recipeRepository.save(originalRecipe);
+        }
 
-        return recipeRepository.save(recipe);
+        var recipeInput = convertToRecipeInput(originalRecipe, recipeTranslationInput);
+        var translatedRecipe = createRecipe(recipeInput);
+
+        return recipeStorageService.saveIfOriginal(translatedRecipe);
     }
 
+    private RecipeInput convertToRecipeInput(Recipe originalRecipe, RecipeTranslationInput recipeTranslationInput) {
+        var imageInput = originalRecipe.getImage() != null ?
+                new ImageInput(originalRecipe.getImage().getName(), originalRecipe.getImage().getResource()) :
+                null;
+
+        List<IngredientInput> ingredients = originalRecipe.getIngredients().stream()
+                .map(ingredient -> {
+                    var translatedProduct = productService.getProductByLangGroupIdOrThrow(
+                            ingredient.getProduct().getLangGroupId(),
+                            recipeTranslationInput.getLanguage());
+
+                    return new IngredientInput(
+                            ProductInput.builder()
+                                .name(translatedProduct.getName())
+                                .langGroupId(translatedProduct.getLangGroupId())
+                                .language(translatedProduct.getLanguage())
+                                .productType(translatedProduct.getProductType())
+                                .consistence(translatedProduct.getConsistence())
+                                .build(),
+                            ingredient.getQuantity().getTotalQuantity(),
+                            ingredient.getQuantity().getUnit()); })
+                .toList();
+
+
+        return RecipeInput.builder()
+                .language(recipeTranslationInput.getLanguage())
+                .langGroupId(Optional.ofNullable(originalRecipe.getLangGroupId())
+                        .orElse(UUID.randomUUID().toString())
+                )
+
+                .name(recipeTranslationInput.getName())
+                .description(recipeTranslationInput.getDescription())
+
+                .image(imageInput)
+                .foodCategory(originalRecipe.getFoodCategory())
+                .lifestyles(originalRecipe.getLifestyles())
+                .ingredients(ingredients)
+                .totalKcal(originalRecipe.getTotalKcal())
+                .totalProteins(originalRecipe.getTotalProteins())
+                .totalFats(originalRecipe.getTotalFats())
+                .totalCarbohydrates(originalRecipe.getTotalCarbohydrates())
+                .build();
+    }
+
+
     public Optional<Recipe> findRecipeTranslationInto(Language language, Recipe recipe) {
-        return recipeRepository.findRecipeByIdAndLanguage(
-                recipe.getId(), language
+        return recipeRepository.findRecipeByLangGroupIdAndLanguage(
+                recipe.getLangGroupId(), language
         );
+    }
+
+    public List<Recipe> findRecipeTranslations(String langGroupId) {
+        return recipeRepository.findRecipesByLangGroupId(langGroupId);
     }
 
     public List<Recipe> findAllRecipes() {

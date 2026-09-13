@@ -12,6 +12,7 @@ import java.util.Set;
 @SuperBuilder
 public class NutritionProgramInput extends BaseNutritionProgramInput {
 
+    private String langGroupId;
     private Language language;
 
     private Set<Lifestyle> lifestyles;

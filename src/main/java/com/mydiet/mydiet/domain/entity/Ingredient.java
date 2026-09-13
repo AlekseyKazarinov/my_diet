@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import jakarta.persistence.*;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Optional;
 import java.util.Set;

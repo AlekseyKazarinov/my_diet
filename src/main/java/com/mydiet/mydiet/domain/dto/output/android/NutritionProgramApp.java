@@ -25,6 +25,7 @@ public class NutritionProgramApp {
 
 
     // text
+    private Long langGroupId;
     private String language;
 
     public String name;

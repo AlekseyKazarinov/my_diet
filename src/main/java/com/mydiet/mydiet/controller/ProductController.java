@@ -1,6 +1,7 @@
 package com.mydiet.mydiet.controller;
 
 import com.mydiet.mydiet.domain.dto.input.ProductInput;
+import com.mydiet.mydiet.domain.dto.input.ProductTranslationInput;
 import com.mydiet.mydiet.domain.entity.Product;
 import com.mydiet.mydiet.repository.ProductRepository;
 import com.mydiet.mydiet.service.ProductService;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -48,6 +50,20 @@ public class ProductController {
     ) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(productService.updateValidatedProduct(productId, productUpdateInput));
+    }
+
+    @PutMapping("/{productId}/translate")
+    @Operation(summary = "Create translated Product by Id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product translated", content = @Content(schema = @Schema(implementation = Product.class))),
+            @ApiResponse(responseCode = "204", description = "Product does not exist")
+    })
+    public ResponseEntity<Product> translateProduct(
+            @PathVariable Long productId,
+            @RequestBody @NonNull ProductTranslationInput productTranslationInput
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(productService.translateProduct(productId, productTranslationInput));
     }
 
     @PatchMapping("/{productId}/name")

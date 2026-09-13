@@ -6,11 +6,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class RecipeTranslationInput {
+public class ProductTranslationInput {
 
     String name;
-    String description;
-
     Language language;
 
 }

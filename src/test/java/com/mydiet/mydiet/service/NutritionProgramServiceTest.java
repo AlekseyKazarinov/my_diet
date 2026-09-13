@@ -1,8 +1,11 @@
 package com.mydiet.mydiet.service;
 
+import com.google.common.collect.Lists;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
+import com.mydiet.mydiet.domain.dto.input.ProgramTranslationInput;
 import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.infrastructure.Consistence;
+import com.mydiet.mydiet.repository.NutritionProgramRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
@@ -10,13 +13,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static com.mydiet.mydiet.domain.entity.Language.ENGLISH;
+import static com.mydiet.mydiet.domain.entity.Language.RUSSIAN;
+import static com.mydiet.mydiet.domain.entity.Lifestyle.NOT_SPECIFIED;
+import static com.mydiet.mydiet.domain.entity.Status.DRAFT;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -26,15 +30,21 @@ public class NutritionProgramServiceTest {
     private final String NUTRITION_PROGRAM_NAME = "Test Nutrition Program";
     private final String NUTRITION_PROGRAM_SHORT_DESCRIPTION = "short description";
     private final String NUTRITION_PROGRAM_DESCRIPTION = "full desctiption";
+    private final String RECIPE_LANG_GROUP_ID = UUID.randomUUID().toString();
 
     private final Long TOTAL_NUMBER_OF_DAILY_DIETS = 7L;
     private final String DAILY_DIET_NAME = "DailyDiet sample";
+
+    private final Long NUTRITION_PROGRAM_NUMBER = 1L;
 
     @Mock
     private DailyDietService dailyDietService;
 
     @Mock
     private NutritionProgramStorageService nutritionProgramStorageService;
+
+    @Mock
+    private NutritionProgramRepository nutritionProgramRepository;
 
     @InjectMocks
     private NutritionProgramService nutritionProgramService;
@@ -57,7 +67,7 @@ public class NutritionProgramServiceTest {
         Assertions.assertEquals(NUTRITION_PROGRAM_SHORT_DESCRIPTION, nutritionProgram.getShortDescription());
         Assertions.assertEquals(NUTRITION_PROGRAM_DESCRIPTION, nutritionProgram.getDescription());
         Assertions.assertEquals(ENGLISH, nutritionProgram.getLanguage());
-        Assertions.assertEquals(Status.DRAFT, nutritionProgram.getStatus());
+        Assertions.assertEquals(DRAFT, nutritionProgram.getStatus());
 
         Assertions.assertNotNull(nutritionProgram.getDailyDiets());
 
@@ -77,6 +87,143 @@ public class NutritionProgramServiceTest {
         }
     }
 
+    @Test
+    public void translateNutritionProgram() {
+        // Given
+        var originalProgram = getOriginalNutritionProgram();
+
+        var programTranslationInput = getProgramTranslationInput();
+
+        when(nutritionProgramStorageService.getProgramOrElseThrow(eq(NUTRITION_PROGRAM_NUMBER)))
+                .thenReturn(originalProgram);
+        when(nutritionProgramRepository.findNutritionProgramByLangGroupIdAndLanguage(any(), any()))
+                .thenReturn(Optional.empty());
+
+        when(dailyDietService.createTranslatedDailyDiet(any(), any()))
+                .thenReturn(getTranslatedDailyDiet());
+        when(nutritionProgramStorageService.saveIfOriginal(any()))
+                .then(AdditionalAnswers.returnsFirstArg());
+        
+        // When
+        var translatedProgram = nutritionProgramService.translateValidatedNutritionProgram(NUTRITION_PROGRAM_NUMBER, programTranslationInput);
+
+        //Then
+        Assertions.assertNotNull(translatedProgram);
+
+        Assertions.assertEquals(ENGLISH, translatedProgram.getLanguage());
+        Assertions.assertEquals(originalProgram.getLangGroupId(), translatedProgram.getLangGroupId());
+
+        Assertions.assertEquals(programTranslationInput.getName(), translatedProgram.getName());
+        Assertions.assertEquals(programTranslationInput.getDescription(), translatedProgram.getDescription());
+        Assertions.assertEquals(DRAFT, translatedProgram.getStatus());
+    }
+
+    private ProgramTranslationInput getProgramTranslationInput() {
+        return ProgramTranslationInput.builder()
+                .name("FISH")
+                .shortDescription("no short desctiption")
+                .description("One fish day")
+                .additionalInfo("no additional info")
+                .language(ENGLISH)
+                .build();
+    }
+
+    private DailyDiet getTranslatedDailyDiet() {
+        return DailyDiet.builder()
+                .name("fish diet")
+                .meals(Set.of(Meal.builder()
+                        .recipe(Recipe.builder()
+                                .id(2L)
+                                .name("Fish recipe")
+                                .description("Fish recipe description")
+                                .langGroupId(RECIPE_LANG_GROUP_ID)
+                                .language(ENGLISH)
+                                .ingredients(Lists.newArrayList(getTranslatedIngredient()))
+                                .totalCarbohydrates(12.0)
+                                .totalProteins(12.0)
+                                .totalFats(12.0)
+                                .totalKcal(100.0)
+                                .build()
+                        )
+                        .foodTime(FoodTime.NIGHT_SNACK)
+                        .build()))
+                .build();
+
+    }
+
+    private Ingredient getTranslatedIngredient() {
+        var product = Product.builder()
+                .productType(ProductType.FISH)
+                .name("FISH")
+                .consistence(Consistence.SOLID)
+                .langGroupId(UUID.randomUUID().toString())
+                .language(ENGLISH)
+                .build();
+
+        var quantity = Quantity.of(1.0, QuantityUnit.PIECE);
+
+        return Ingredient.builder()
+                .product(product)
+                .quantity(quantity)
+                .build();
+    }
+
+    private NutritionProgram getOriginalNutritionProgram() {
+        var product = Product.builder()
+                .productType(ProductType.FISH)
+                .name("Рыба")
+                .consistence(Consistence.SOLID)
+                .build();
+
+        var quantity = Quantity.of(1.0, QuantityUnit.PIECE);
+
+        var ingredient = Ingredient.builder()
+                .product(product)
+                .quantity(quantity)
+                .build();
+
+        var recipe = Recipe.builder()
+                .langGroupId(RECIPE_LANG_GROUP_ID)
+                .description("Описание рецепта рыбы")
+                .ingredients(Lists.newArrayList(ingredient))
+                .totalCarbohydrates(12.0)
+                .totalProteins(12.0)
+                .totalFats(12.0)
+                .name("Рецепт Рыбы")
+                .totalKcal(100.0)
+                .build();
+
+        var listOfMeals = new HashSet<Meal>();
+
+        long size = 3;
+
+        var foodTimeList = List.of(FoodTime.BREAKFAST, FoodTime.DINNER, FoodTime.SUPPER);
+
+        for (long i = 1; i <= size; i++) {
+            var meal = new Meal();
+            meal.setRecipe(recipe);
+            meal.setFoodTime(foodTimeList.get((int)i - 1));
+            listOfMeals.add(meal);
+        }
+
+        var meal = new Meal();
+        meal.setRecipe(recipe);
+        meal.setFoodTime(FoodTime.NIGHT_SNACK);
+
+        var dailyDiet = new DailyDiet();
+        dailyDiet.setMeals(listOfMeals);
+        dailyDiet.setName("Рыбная диета однодневная");
+
+        return NutritionProgram.builder()
+                .number(NUTRITION_PROGRAM_NUMBER)
+                .name("РЫБА")
+                .description("Один рыбный день")
+                .langGroupId(UUID.randomUUID().toString())
+                .dailyDiets(List.of(dailyDiet))
+                .lifestyles(Set.of(NOT_SPECIFIED))
+                .status(Status.PUBLISHED)
+                .build();
+    }
 
     private NutritionProgramInput getNutritionProgramInput() {
         var dailyDietIds = new ArrayList<Long>();
@@ -93,6 +240,7 @@ public class NutritionProgramServiceTest {
                 .dayColor("#FF0000")    // red
                 .mainColor("#00FF00")   // green
                 .lightColor("#0000FF")  // blue
+                .langGroupId(UUID.randomUUID().toString())
                 .language(ENGLISH)
                 .lifestyles(Set.of(Lifestyle.NOT_SPECIFIED))
                 .dailyNumberOfMeals((short) 3)

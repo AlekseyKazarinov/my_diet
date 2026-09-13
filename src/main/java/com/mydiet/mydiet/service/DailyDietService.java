@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,6 +54,23 @@ public class DailyDietService {
                 .build();
 
         return saveIfOriginal(dailyDiet);
+    }
+
+    public DailyDiet createTranslatedDailyDiet(Language language, DailyDiet dailyDiet) {
+        var translatedMeals = new HashSet<Meal>();
+
+        dailyDiet.getMeals().forEach(meal -> {
+            var translatedMeal = mealService.createTranslatedMeal(language, meal);
+            translatedMeals.add(translatedMeal);
+        });
+
+        var translatedDailyDiet =  DailyDiet.builder()
+                .name(dailyDiet.getName())
+                .meals(translatedMeals)
+                .lifestyles(new HashSet<>(dailyDiet.getLifestyles()))
+                .build();
+
+        return dailyDietRepository.save(translatedDailyDiet);
     }
 
     private Set<Lifestyle> deriveLifestylesFromMeals(Set<Meal> meals) {

@@ -12,7 +12,7 @@ import java.util.Set;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 @Entity
-@Table(name = "PRODUCT")
+@Table(name = "PRODUCT", indexes = @Index(columnList = "langGroupId"))
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,6 +29,7 @@ public class Product {
     @Column(unique = true)
     private String name;
 
+    private String langGroupId;
     private Language language;
 
     private ProductType productType;

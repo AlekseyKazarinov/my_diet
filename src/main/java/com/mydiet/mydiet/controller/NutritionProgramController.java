@@ -5,10 +5,7 @@ import com.mydiet.mydiet.domain.dto.input.BaseNutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.NutritionProgramInput;
 import com.mydiet.mydiet.domain.dto.input.ProductExclusion;
 import com.mydiet.mydiet.domain.dto.input.ProgramTranslationInput;
-import com.mydiet.mydiet.domain.entity.Language;
-import com.mydiet.mydiet.domain.entity.Lifestyle;
-import com.mydiet.mydiet.domain.entity.NutritionProgram;
-import com.mydiet.mydiet.domain.entity.Status;
+import com.mydiet.mydiet.domain.entity.*;
 import com.mydiet.mydiet.service.NutritionProgramService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -19,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -84,6 +82,23 @@ public class NutritionProgramController {
     ) {
         var updatedProgram = nutritionProgramService.updateNutritionProgram(programNumber, baseNutritionProgramInput);
         return ResponseEntity.accepted().body(updatedProgram);
+    }
+
+    @Operation(summary = "Get Same Nutrition Programs but in different languages")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Nutrition Programs in different languages found", content = @Content(schema = @Schema(implementation = Recipe.class))),
+            @ApiResponse(responseCode = "204", description = "There is no different Nutrition Programs with the same language group id")
+    })
+    @GetMapping(path = "{nutritionProgramId}/language-group-nutrition-programs")
+    public ResponseEntity<List<NutritionProgram>> getSameRecipesWithDifferentLanguages(@PathVariable @NonNull Long nutritionProgramId) {
+        var optionalNutritionProgram = nutritionProgramService.findNutritionProgram(nutritionProgramId);
+
+        if (optionalNutritionProgram.isPresent()) {
+            var listOfNutritionProgramGroupWithDifferentLanguages = nutritionProgramService.findNutritionProgramTranslations(optionalNutritionProgram.get().getLangGroupId());
+            return ResponseEntity.ok(listOfNutritionProgramGroupWithDifferentLanguages);
+        } else {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
     }
 
     @GetMapping(path = "/count")
